@@ -15,10 +15,6 @@ public class Perfil {
     private String creadoEn;
     private String actualizadoEn;
 
-    public Perfil(long id) {
-        this.id = id;
-    }
-
     public Perfil() {
     }
 
