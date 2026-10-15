@@ -1,6 +1,5 @@
 package com.personal.vinculo.Service;
 
-import com.personal.vinculo.Models.Circulos;
 import com.personal.vinculo.Models.Perfil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
