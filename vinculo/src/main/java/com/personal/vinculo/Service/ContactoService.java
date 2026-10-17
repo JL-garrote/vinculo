@@ -33,6 +33,11 @@ public class ContactoService {
         return contactosList;
     }
 
+    public int contadorDeContactos() {
+        List<Contactos> lista = sacarTodos();
+        return lista.size();
+    }
+
     public Optional<Contactos> buscarPorID(long id) {
         List<Contactos> lista = null;
         try {

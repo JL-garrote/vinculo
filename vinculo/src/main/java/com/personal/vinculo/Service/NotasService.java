@@ -27,6 +27,11 @@ public class NotasService {
         return lista;
     }
 
+    public int contadorDeNotas(){
+        List<Notas> lista = sacarTodos();
+        return lista.size();
+    }
+
     public Optional<Notas> buscarPorID(int id) {
         String sql = "SELECT * FROM notas WHERE id = ?";
         List<Notas> lista = jdbc.query(sql,this::rowNote,id);
