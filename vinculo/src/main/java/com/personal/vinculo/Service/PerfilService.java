@@ -15,9 +15,9 @@ public class PerfilService {
     private Perfil usuario;
     private JdbcTemplate jdbc;
 
-    public PerfilService(Perfil usuario, JdbcTemplate jdbc) {
-        this.usuario = usuario;
-        this.jdbc = jdbc;
+    public PerfilService() {
+        usuario = new Perfil();
+        jdbc = new JdbcTemplate();
     }
 
     public List<Perfil> sacarUsuario() {
