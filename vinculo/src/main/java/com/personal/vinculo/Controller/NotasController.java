@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/crotroller")
+@RequestMapping("/api/controller")
 public class NotasController {
 
     private NotasService notas;

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/crotroller")
+@RequestMapping("/api/controller")
 public class ContactoController {
 
     private ContactoService contacto;
@@ -19,17 +19,17 @@ public class ContactoController {
         this.contacto = contacto;
     }
 
-    @PostMapping
+    @PostMapping("/todos")
     public List<Contactos> traerTodos() {
         return contacto.sacarTodos();
     }
 
-    @PostMapping
+    @PostMapping("/porID")
     public Optional<Contactos> porID(long id) {
         return contacto.buscarPorID(id);
     }
 
-    @PostMapping
+    @PostMapping("/contador")
     public int sacarContador() {
         return contacto.contadorDeContactos();
     }
