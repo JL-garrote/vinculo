@@ -2,8 +2,8 @@ package com.personal.vinculo.Controller;
 
 import com.personal.vinculo.Models.Contactos;
 import com.personal.vinculo.Service.ContactoService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,17 +20,17 @@ public class ContactoController {
         this.contacto = contacto;
     }
 
-    @PostMapping("/todos")
+    @GetMapping("/todos")
     public List<Contactos> traerTodos() {
         return contacto.sacarTodos();
     }
 
-    @PostMapping("/porID")
-    public Optional<Contactos> porID(@RequestBody long id) {
+    @GetMapping("/porID/{id}")
+    public Optional<Contactos> porID(@PathVariable long id) {
         return contacto.buscarPorID(id);
     }
 
-    @PostMapping("/contador")
+    @GetMapping("/contador")
     public int sacarContador() {
         return contacto.contadorDeContactos();
     }

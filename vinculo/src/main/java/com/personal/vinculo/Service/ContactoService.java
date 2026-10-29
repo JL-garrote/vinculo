@@ -14,12 +14,10 @@ import java.util.Optional;
 @Service
 public class ContactoService {
 
-    private Contactos contact;
     private JdbcTemplate jdbc;
 
-    public ContactoService() {
-        contact = new Contactos();
-        jdbc = new JdbcTemplate();
+    public ContactoService(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
     }
 
     public List<Contactos> sacarTodos() {
@@ -61,43 +59,41 @@ public class ContactoService {
     }
 
     private Contactos rowContact(ResultSet rs, int rowNum) throws SQLException {
+        Contactos contact = new Contactos();
         contact.setId(rs.getLong("id"));
         contact.setTratamiento(rs.getString("tratamiento"));
         contact.setNombre(rs.getString("nombre"));
         contact.setApellidos(rs.getString("apellidos"));
-        contact.setFotoURI(rs.getString("fotoURI"));
+        contact.setFotoURI(rs.getString("foto_url"));
         contact.setEmpresa(rs.getString("empresa"));
         contact.setCargo(rs.getString("cargo"));
         contact.setCiudad(rs.getString("ciudad"));
         contact.setPais(rs.getString("pais"));
         contact.setEmail(rs.getString("email"));
         contact.setTelefono(rs.getString("telefono"));
-        contact.setLinkedinURI(rs.getString("linkedinURI"));
-        contact.setCanalPreferido(rs.getString("canalPreferido"));
-        contact.setCirculoID(rs.getLong("circuloID"));
-        contact.setRolRelacion(rs.getString("rolRelacion"));
-        contact.setCadenciaDias(rs.getInt("cadenciaDias"));
+        contact.setLinkedinURI(rs.getString("linkedin_url"));
+        contact.setCanalPreferido(rs.getString("canal_preferido"));
+        contact.setCirculoID(rs.getLong("circulo_id"));
+        contact.setRolRelacion(rs.getString("rol_relacion"));
+        contact.setCadenciaDias(rs.getInt("cadencia_dias"));
         contact.setPrioritario(rs.getInt("prioritario"));
         contact.setIntereses(rs.getString("intereses"));
-        contact.setDate(rs.getString("date"));
+        contact.setDate(rs.getString("cumpleanos"));
         contact.setFamilia(rs.getString("familia"));
         contact.setAficiones(rs.getString("aficiones"));
-        contact.setHitoProfesional(rs.getString("hitoProfesional"));
-        contact.setComoConocidos(rs.getString("comoConocidos"));
-        contact.setPresentadoPorID(rs.getLong("presentadoPorID"));
-        contact.setProximoPaso(rs.getString("proximoPaso"));
-        contact.setProximoPasoFecha(rs.getString("proximoPasoFecha"));
+        contact.setHitoProfesional(rs.getString("hito_profesional"));
+        contact.setComoConocidos(rs.getString("como_nos_conocimos"));
+        contact.setPresentadoPorID(rs.getLong("presentado_por_id"));
+        contact.setProximoPaso(rs.getString("proximo_paso"));
+        contact.setProximoPasoFecha(rs.getString("proximo_paso_fecha"));
         contact.setOrigen(rs.getString("origen"));
-        contact.setIdExterno(rs.getString("idExterno"));
+        contact.setIdExterno(rs.getString("id_externo"));
         contact.setArchivado(rs.getInt("archivado"));
-        contact.setCreadoEn(rs.getString("creadoEn"));
-        contact.setActualizadoEn(rs.getString("actualizadoEn"));
 
-
-        Timestamp created = rs.getTimestamp("created_at");
+        Timestamp created = rs.getTimestamp("creado_en");
         contact.setCreadoEn(created != null ? created.toString() : null);
 
-        Timestamp updated = rs.getTimestamp("updated_at");
+        Timestamp updated = rs.getTimestamp("actualizado_en");
         contact.setActualizadoEn(updated != null ? updated.toString() : null);
 
         return contact;

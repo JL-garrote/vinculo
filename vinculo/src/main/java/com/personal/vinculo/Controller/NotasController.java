@@ -2,8 +2,8 @@ package com.personal.vinculo.Controller;
 
 import com.personal.vinculo.Models.Notas;
 import com.personal.vinculo.Service.NotasService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,17 +20,17 @@ public class NotasController {
         this.notas = notas;
     }
 
-    @PostMapping("/id")
-    public Optional<Notas> sacarPorID(@RequestBody int id) {
+    @GetMapping("/id/{id}")
+    public Optional<Notas> sacarPorID(@PathVariable int id) {
         return notas.buscarPorID(id);
     }
 
-    @PostMapping("todas")
+    @GetMapping("todas")
     public List<Notas> todas() {
         return notas.sacarTodos();
     }
 
-    @PostMapping("/contadorNotas")
+    @GetMapping("/contadorNotas")
     public int sacarContador() {
         return notas.contadorDeNotas();
     }

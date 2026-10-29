@@ -2,7 +2,7 @@ package com.personal.vinculo.Controller;
 
 import com.personal.vinculo.Models.Perfil;
 import com.personal.vinculo.Service.PerfilService;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,8 +16,8 @@ public class PerfilController {
         this.perfil = perfil;
     }
 
-    @PostMapping("perfil")
+    @GetMapping("perfil")
     public Perfil sacarPerfil() {
-        return (Perfil) perfil.sacarUsuario();
+        return perfil.sacarUsuario().stream().findFirst().orElse(null);
     }
 }

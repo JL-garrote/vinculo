@@ -2,8 +2,8 @@ package com.personal.vinculo.Controller;
 
 import com.personal.vinculo.Models.Circulos;
 import com.personal.vinculo.Service.CirculoService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,13 +20,13 @@ public class CirculoController {
         this.service = service;
     }
 
-    @PostMapping("/todos")
+    @GetMapping("/todos")
     public List<Circulos> traerTodos(){
         return service.sacarTodos();
     }
 
-    @PostMapping("/porID")
-    public Optional<Circulos> porID(@RequestBody int id) {
+    @GetMapping("/porID/{id}")
+    public Optional<Circulos> porID(@PathVariable int id) {
         return service.buscarPorID(id);
     }
 }
