@@ -13,12 +13,10 @@ import java.util.Optional;
 @Service
 public class NotasService {
 
-    private Notas note;
     private JdbcTemplate jdbc;
 
-    public NotasService() {
-        note = new Notas();
-        jdbc = new JdbcTemplate();
+    public NotasService(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
     }
 
     public List<Notas> sacarTodos() {
@@ -39,6 +37,7 @@ public class NotasService {
     }
 
     private Notas rowNote(ResultSet rs, int rowNum) throws SQLException {
+        Notas note = new Notas();
         note.setId(rs.getInt("id"));
         note.setContactoID(rs.getInt("contacto_id"));
         note.setTipo(rs.getString("tipo"));
@@ -46,7 +45,7 @@ public class NotasService {
         note.setContenido(rs.getString("contenido"));
         note.setFijada(rs.getInt("fijada"));
 
-        Timestamp created = rs.getTimestamp("created_at");
+        Timestamp created = rs.getTimestamp("creado_en");
         note.setCreadoEn(created != null ? created.toString() : null);
 
         return note;

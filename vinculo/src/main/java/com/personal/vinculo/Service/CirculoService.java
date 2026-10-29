@@ -12,12 +12,10 @@ import java.util.Optional;
 @Service
 public class CirculoService {
 
-    private Circulos cr;
     private JdbcTemplate jdbcTemplate;
 
-    public CirculoService() {
-        cr = new Circulos();
-        jdbcTemplate = new JdbcTemplate();
+    public CirculoService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public List<Circulos> sacarTodos() {
@@ -33,6 +31,7 @@ public class CirculoService {
     }
 
     private Circulos rowCirculos(ResultSet rs, int rowNum) throws SQLException {
+        Circulos cr = new Circulos();
         cr.setId(rs.getLong("id"));
         cr.setNombre(rs.getString("nombre"));
         cr.setColor(rs.getString("color"));
