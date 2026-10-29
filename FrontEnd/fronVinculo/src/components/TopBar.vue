@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { store } from '@/api/store';
+import AvatarContacto from './AvatarContacto.vue';
+
+const nombre = computed(() => store.perfil?.nombre ?? 'Mi perfil');
+const subtitulo = computed(() => store.perfil?.email ?? store.perfil?.zonaHoraria ?? '');
+</script>
+
 <template>
   <header
     class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-8"
@@ -36,14 +45,10 @@
       </button>
 
       <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high">
-        <img
-          alt="Profile"
-          class="w-8 h-8 rounded-full object-cover"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxyfgTz2IKWtvPRsOaO4L2zLZNHHBCuq53dzmQNwnRyiy6vj3xunSuXy-i9ReGIJH_Ujrx9L57jRDkQ0ZZCoYtpMLNEoXvVd9io8qWeq3J3rs9jv0A0ptBaQ9VrflovM3hCZ_YA-xkQz5bs_SAlHKgZ7nYvupvQ_PoXSTU1Ij9kdMoeWdWRgLvMDPv6BaK5PA4IYUPvvCQ8Df_ki0C_CiroIcpdTXAMUiCa1XOLG0V7VlA6CPfYDQb"
-        />
+        <AvatarContacto :nombre="nombre" :src="store.perfil?.avatarURI" size="w-8 h-8" />
         <div class="hidden lg:flex flex-col text-left">
-          <span class="font-label-md text-label-md text-on-surface leading-tight">Martín Silva</span>
-          <span class="font-label-sm text-label-sm text-on-surface-variant">Relaciones Pro</span>
+          <span class="font-label-md text-label-md text-on-surface leading-tight">{{ nombre }}</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ subtitulo }}</span>
         </div>
       </div>
     </div>

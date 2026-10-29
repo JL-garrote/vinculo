@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import ContactRow, { type DirectoryContact } from '@/components/contactos/ContactRow.vue';
+import { computed, ref, watch } from 'vue';
+import ContactRow from '@/components/contactos/ContactRow.vue';
+import { store } from '@/api/store';
+import { estadoProximoPaso, lista, nombreCompleto, parseFecha, type EstadoProximoPaso } from '@/api/format';
+
+defineEmits<{ abrir: [id: number] }>();
 
 interface Metric {
   label: string;
-  value: string;
+  value: number;
   valueClass: string;
   detail: string;
   detailIcon?: string;
@@ -13,256 +17,125 @@ interface Metric {
   iconClass: string;
 }
 
-interface CircleFilter {
-  key: string;
-  label: string;
-  count: number;
-}
+const total = computed(() => store.contactos.length);
+const pct = (n: number) => (total.value ? Math.round((n / total.value) * 100) : 0);
+const contarEstado = (estado: EstadoProximoPaso) =>
+  store.contactos.filter((c) => estadoProximoPaso(c) === estado).length;
+const conCadencia = computed(() => pct(store.contactos.filter((c) => c.cadenciaDias > 0).length));
 
-const metrics: Metric[] = [
-  {
-    label: 'Al día',
-    value: '182',
-    valueClass: 'text-on-surface',
-    detail: '73% del directorio',
-    detailIcon: 'trending_up',
-    detailClass: 'text-secondary',
-    icon: 'sentiment_satisfied',
-    iconClass: 'bg-secondary-container/40 text-secondary',
-  },
-  {
-    label: 'En Riesgo (>30d)',
-    value: '28',
-    valueClass: 'text-tertiary',
-    detail: 'Requieren toque',
-    detailIcon: 'schedule',
-    detailClass: 'text-tertiary-container',
-    icon: 'priority_high',
-    iconClass: 'bg-tertiary-fixed text-tertiary',
-  },
-  {
-    label: 'Acciones Hoy',
-    value: '7',
-    valueClass: 'text-primary',
-    detail: '3 llamadas, 4 cafés',
-    detailClass: 'text-on-surface-variant',
-    icon: 'event_upcoming',
-    iconClass: 'bg-primary-fixed text-primary-container',
-  },
-  {
-    label: 'Círculo Íntimo',
-    value: '15',
-    valueClass: 'text-on-surface',
-    detail: 'Cadencia semanal activa',
-    detailClass: 'text-secondary',
-    icon: 'diversity_1',
-    iconClass: 'bg-surface-container-high text-on-surface',
-  },
-];
+const metrics = computed<Metric[]>(() => {
+  const conCirculo = store.contactos.filter((c) => c.circuloID > 0).length;
+  const prioritarios = store.contactos.filter((c) => c.prioritario).length;
+  return [
+    {
+      label: 'Organizados',
+      value: conCirculo,
+      valueClass: 'text-on-surface',
+      detail: `${pct(conCirculo)}% con círculo`,
+      detailIcon: 'trending_up',
+      detailClass: 'text-secondary',
+      icon: 'sentiment_satisfied',
+      iconClass: 'bg-secondary-container/40 text-secondary',
+    },
+    {
+      label: 'Pasos Vencidos',
+      value: contarEstado('vencido'),
+      valueClass: 'text-tertiary',
+      detail: 'Requieren toque',
+      detailIcon: 'schedule',
+      detailClass: 'text-tertiary-container',
+      icon: 'priority_high',
+      iconClass: 'bg-tertiary-fixed text-tertiary',
+    },
+    {
+      label: 'Esta Semana',
+      value: contarEstado('pronto'),
+      valueClass: 'text-primary',
+      detail: 'próximos pasos en 7 días',
+      detailClass: 'text-on-surface-variant',
+      icon: 'event_upcoming',
+      iconClass: 'bg-primary-fixed text-primary-container',
+    },
+    {
+      label: 'Prioritarios',
+      value: prioritarios,
+      valueClass: 'text-on-surface',
+      detail: `${pct(prioritarios)}% de tu red`,
+      detailClass: 'text-secondary',
+      icon: 'diversity_1',
+      iconClass: 'bg-surface-container-high text-on-surface',
+    },
+  ];
+});
 
-const circleFilters: CircleFilter[] = [
-  { key: 'todos', label: 'Todos', count: 248 },
-  { key: 'intimo', label: 'Círculo Íntimo', count: 15 },
-  { key: 'mentores', label: 'Mentores', count: 8 },
-  { key: 'clientes', label: 'Clientes & Leads', count: 42 },
-  { key: 'networking', label: 'Networking', count: 120 },
-  { key: 'inversores', label: 'Inversores', count: 14 },
-];
+// Píldoras de círculo: "Todos", uno por círculo y "Sin círculo" si hace falta
+const circleFilters = computed(() => {
+  const filtros = [
+    { key: 0, label: 'Todos', count: total.value },
+    ...store.circulos.map((c) => ({
+      key: c.id,
+      label: c.nombre,
+      count: store.contactos.filter((x) => x.circuloID === c.id).length,
+    })),
+  ];
+  const sinCirculo = store.contactos.filter((c) => c.circuloID === 0).length;
+  if (sinCirculo) filtros.push({ key: -1, label: 'Sin círculo', count: sinCirculo });
+  return filtros;
+});
 
-const contacts: DirectoryContact[] = [
-  {
-    name: 'Sofía Valdés',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCwbNTjw4DrYvGNGD3gzyMj3ilMTmKVp-wSb4JI9F84rAekg24_dOx2mpHBEKkxEcD7GBEwBYOlW3IGkR5nFXKzueK7ID5QmOy32AWeuNtgJYrLSJtG3sqx4WbU8-q2th08awJBuv3j9MwvsWjtZIfggF4pKOzVb3IPg6qhDh_Zkj3vUHRQw3ognHYTml_WpqBVfnPZbCh9hZszfrt_DGsJvgVQ5wpZ6pHu78spxSsWKHM2vyHO2FNc',
-    birthday: true,
-    statusClass: 'bg-error',
-    statusTitle: 'Cadencia vencida',
-    interests: ['Diseño UI', 'Vino', 'Maratones'],
-    group: 'clientes',
-    circle: 'Cliente VIP',
-    circleClass: 'bg-primary-fixed text-on-primary-fixed',
-    circleDotClass: 'bg-primary',
-    role: 'VP of Product',
-    company: 'Novatech LatAm',
-    cadence: 'Cada 2 semanas',
-    daysSince: 38,
-    health: 'risk',
-    lastWhen: 'Hace 38 días',
-    lastWhenClass: 'text-error',
-    lastWhat: 'Llamada breve de alineación',
-    healthDotClass: 'bg-error',
-    healthTitle: 'En riesgo (>30 días)',
-    nextIcon: 'restaurant',
-    nextIconClass: 'text-primary',
-    nextTitle: 'Almuerzo 24 Mar',
-    nextDetail: 'Confirmar restaurante',
-  },
-  {
-    name: 'Mateo Arismendi',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA2V2a32MRhtejzJFcJ26VUJUJH-xBXNdsWSlnZE08rPsv6cPtVRlc_2XJX03SzU8T4U0k0PQ4QTkjiWwCVtySCBOhzqoAEBq8eJniu60DKHHoLFyNGXSKZ20lBg20eHKD9sEVnHgYcjO_YpwrqE9dctZNsk6XqGKTpv-fOM6Jv6Xq7oQIuvs_A9X2maMvv18hPVeKYLP7GDPpH-lTpeL-G7itZzFki9oNyPm3YmT--N6MGC6K0rLsQ',
-    statusClass: 'bg-secondary',
-    statusTitle: 'Relación activa',
-    interests: ['Angel Investing', 'SaaS B2B'],
-    group: 'mentores',
-    circle: 'Mentor',
-    circleClass: 'bg-tertiary-fixed text-on-tertiary-fixed',
-    circleDotClass: 'bg-tertiary',
-    role: 'Board Advisor',
-    company: 'Kite Ventures',
-    cadence: 'Mensual',
-    daysSince: 4,
-    health: 'good',
-    lastWhen: 'Hace 4 días',
-    lastWhenClass: 'text-on-surface',
-    lastWhat: 'Café presencial (Revisión Q1)',
-    healthDotClass: 'bg-secondary',
-    healthTitle: 'Al día',
-    nextIcon: 'send',
-    nextIconClass: 'text-secondary',
-    nextTitle: 'Enviar informe',
-    nextDetail: 'Métricas de retención',
-  },
-  {
-    name: 'Lucía Morales',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuD4kt-DzZ9YUDSy02gnOpa8rS_NI306NNUJ8An2bmpD_4q2Rl1zuQdgHhO4K35escPoHsrwGl3tFnF_cORHsMnfVSvFRZSaHTHby1-rGCFXUGTF_hbQ9FQUKZxIisxJSTT7vz2Y7aCeRem4hyg_BspPlrYba6mVpGO9D3Vu4DyzEhUXzuDSRi3ICFcW94U3qoi6JGzZ6JRh6n4STh-qdRph5BR_RhTDMCdqM77OkfKLZE5WyX3uHe1I',
-    statusClass: 'bg-secondary',
-    statusTitle: 'Relación activa',
-    interests: ['Arquitectura', 'Fotografía', 'Senderismo'],
-    group: 'intimo',
-    circle: 'Amigo Íntimo',
-    circleClass: 'bg-secondary-fixed text-on-secondary-fixed',
-    circleDotClass: 'bg-secondary',
-    role: 'Lead Architect',
-    company: 'Estudio Diagonal',
-    cadence: 'Semanal',
-    daysSince: 1,
-    health: 'good',
-    lastWhen: 'Ayer',
-    lastWhenClass: 'text-on-surface',
-    lastWhat: 'Audio de WhatsApp (Paseo perro)',
-    healthDotClass: 'bg-secondary',
-    healthTitle: 'Al día',
-    nextIcon: 'directions_walk',
-    nextIconClass: 'text-primary',
-    nextTitle: 'Escapada Sierra',
-    nextDetail: 'Sábado 29',
-  },
-  {
-    name: 'Carlos Mendizábal',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuATh3DTagvdqFto85fr8Ztr0ANHa6kw5u_J9HTRrwuaWpYfQkYic277SKJycacdd6tlX-74tTWSp6Nv7C1UXGtP4OF8MEW8aF-S757DKn_Tr76EsdvxRUP_3QjHGrqwyDxIkUu1LLVsBuMyViWjgauYfWjdgiRiFRAQ2cKlWaxFYaVe61yrDk9iQv0QSMhwAKbhVSAN37uWyovrbhUHL_7T5HHGayCI6KJh7EwmrihhH4Dz1rLABH_p',
-    statusClass: 'bg-tertiary-container',
-    statusTitle: 'Por vencer',
-    interests: ['Fintech', 'Series A'],
-    group: 'inversores',
-    circle: 'Inversor',
-    circleClass: 'bg-surface-container-high text-on-surface',
-    circleDotClass: 'bg-on-surface-variant',
-    role: 'Managing Partner',
-    company: 'Iberia Seed Capital',
-    cadence: 'Bimestral',
-    daysSince: 26,
-    health: 'warning',
-    lastWhen: 'Hace 26 días',
-    lastWhenClass: 'text-tertiary-container',
-    lastWhat: 'Actualización trimestral (Email)',
-    healthDotClass: 'bg-tertiary-container',
-    healthTitle: 'Atención requerida pronto',
-    nextIcon: 'celebration',
-    nextIconClass: 'text-primary-container',
-    nextTitle: 'Felicitar por ascenso',
-    nextDetail: 'Nuevo fondo lanzado',
-  },
-  {
-    name: 'Elena Chen',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuC7U4lTJWm4ahEr9SY-X6r1Kem-nrHuZvL9RswowsqLcrzLVZogXgV5Gu9W4uWGCGr6UzFVKi4wDRBsMxWPKB5nh_gcKvZ0jfimmFcuU_EUczVn9pySptlpvx7A192r_Jug1B71F8wpAg4PbkOBiGQJLsua5GsVgK-Nj_gwiT2K5-A8SNRcGzLpup0SYVr3lcPTJv4tdB26jENCWjfBTVPx_rkoS36UCew-QZNSY6Er1XO5LEOdiIsX',
-    statusClass: 'bg-secondary',
-    statusTitle: 'Relación activa',
-    interests: ['Inteligencia Artificial', 'Podcast'],
-    group: 'networking',
-    circle: 'Networking',
-    circleClass: 'bg-primary-fixed-dim/40 text-on-primary-fixed-variant',
-    circleDotClass: 'bg-primary-container',
-    role: 'Founder & CEO',
-    company: 'Synthetix Labs',
-    cadence: 'Trimestral',
-    daysSince: 12,
-    health: 'good',
-    lastWhen: 'Hace 12 días',
-    lastWhenClass: 'text-on-surface',
-    lastWhat: 'Mensaje en LinkedIn (Conferencia)',
-    healthDotClass: 'bg-secondary',
-    healthTitle: 'Al día',
-    nextIcon: 'mic',
-    nextIconClass: 'text-on-surface-variant',
-    nextTitle: 'Invitación a podcast',
-    nextDetail: 'Episodio de Mayo',
-  },
-  {
-    name: 'Dr. Javier Roca',
-    avatar:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCYQQ0B7zcLDpKB8CukdkK0PXppS2Omb_I3JLbkbCnrPszb27_0VyEr5cng39Qoj6807AMdiz5rqk-QLaJtPuQKyjOQNozemlAJJntyMmbS19C80-XdPCOlLvCyKbf54PrRGQvO_hABZrjhBnXbL9gUGl4ubAZVMDUwYnUwRRaaMm6lWNAXjr0UbMDlte88hLpDuZwN32RqFqRF49cI0o_IcWr2Gmn5DKyEXsimSN0Y1nX7lKaV_Ihe',
-    statusClass: 'bg-error',
-    statusTitle: 'Cadencia muy retrasada',
-    interests: ['Filosofía', 'Bioética'],
-    group: 'mentores',
-    circle: 'Mentor',
-    circleClass: 'bg-tertiary-fixed text-on-tertiary-fixed',
-    circleDotClass: 'bg-tertiary',
-    role: 'Catedrático Emérito',
-    company: 'Universidad Complutense',
-    cadence: 'Cada 6 semanas',
-    daysSince: 60,
-    health: 'risk',
-    lastWhen: 'Hace 2 meses',
-    lastWhenClass: 'text-error',
-    lastWhat: 'Email sobre su último libro',
-    healthDotClass: 'bg-error',
-    healthTitle: 'En riesgo',
-    nextIcon: 'call',
-    nextIconClass: 'text-error',
-    nextTitle: 'Llamada de puesta al día',
-    nextDetail: 'Preguntar por su salud',
-  },
-];
+const ciudades = computed(() =>
+  [...new Set(store.contactos.map((c) => c.ciudad).filter((c): c is string => !!c))].sort((a, b) =>
+    a.localeCompare(b, 'es'),
+  ),
+);
 
 // Filtros
-const activeCircle = ref('todos');
+const activeCircle = ref(0);
 const search = ref('');
-const healthFilter = ref('all');
-const location = ref('all');
-const sortBy = ref('urgent');
-const viewMode = ref<'tabla' | 'cuadricula'>('tabla');
+const estadoFilter = ref<'all' | EstadoProximoPaso>('all');
+const ciudad = ref('all');
+const sortBy = ref<'urgent' | 'alpha' | 'created'>('urgent');
 const rowsPerPage = ref(10);
+const page = ref(1);
+
+const fechaPaso = (fecha: string | null) => parseFecha(fecha)?.getTime() ?? Number.POSITIVE_INFINITY;
 
 const filteredContacts = computed(() => {
   const q = search.value.trim().toLowerCase();
 
-  const list = contacts.filter((c) => {
-    if (activeCircle.value !== 'todos' && c.group !== activeCircle.value) return false;
-    if (healthFilter.value === 'risk' && c.health !== 'risk') return false;
-    if (healthFilter.value === 'good' && c.health !== 'good') return false;
-    if (healthFilter.value === 'recent' && c.daysSince >= 7) return false;
+  const resultado = store.contactos.filter((c) => {
+    if (activeCircle.value === -1 && c.circuloID !== 0) return false;
+    if (activeCircle.value > 0 && c.circuloID !== activeCircle.value) return false;
+    if (estadoFilter.value !== 'all' && estadoProximoPaso(c) !== estadoFilter.value) return false;
+    if (ciudad.value !== 'all' && c.ciudad !== ciudad.value) return false;
     if (!q) return true;
-    return [c.name, c.company, c.role, c.circle, ...c.interests].some((field) => field.toLowerCase().includes(q));
+    return [nombreCompleto(c), c.empresa, c.cargo, c.ciudad, c.email, ...lista(c.intereses)]
+      .filter(Boolean)
+      .some((campo) => campo!.toLowerCase().includes(q));
   });
 
-  if (sortBy.value === 'urgent') return [...list].sort((a, b) => b.daysSince - a.daysSince);
-  if (sortBy.value === 'alpha') return [...list].sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  if (sortBy.value === 'recent') return [...list].sort((a, b) => a.daysSince - b.daysSince);
-  return list;
+  if (sortBy.value === 'urgent') return resultado.sort((a, b) => fechaPaso(a.proximoPasoFecha) - fechaPaso(b.proximoPasoFecha));
+  if (sortBy.value === 'alpha') return resultado.sort((a, b) => nombreCompleto(a, false).localeCompare(nombreCompleto(b, false), 'es'));
+  return resultado.sort((a, b) => (parseFecha(b.creadoEn)?.getTime() ?? 0) - (parseFecha(a.creadoEn)?.getTime() ?? 0));
 });
 
+// Paginación
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredContacts.value.length / rowsPerPage.value)));
+const pageContacts = computed(() =>
+  filteredContacts.value.slice((page.value - 1) * rowsPerPage.value, page.value * rowsPerPage.value),
+);
+const rangeStart = computed(() => (filteredContacts.value.length ? (page.value - 1) * rowsPerPage.value + 1 : 0));
+const rangeEnd = computed(() => Math.min(page.value * rowsPerPage.value, filteredContacts.value.length));
+
+watch([activeCircle, search, estadoFilter, ciudad, sortBy, rowsPerPage], () => (page.value = 1));
+
 // Selección
-const selected = ref<Record<string, boolean>>({});
+const selected = ref<Record<number, boolean>>({});
 
 const allSelected = computed({
-  get: () => filteredContacts.value.length > 0 && filteredContacts.value.every((c) => selected.value[c.name]),
+  get: () => pageContacts.value.length > 0 && pageContacts.value.every((c) => selected.value[c.id]),
   set: (value: boolean) => {
-    for (const c of filteredContacts.value) selected.value[c.name] = value;
+    for (const c of pageContacts.value) selected.value[c.id] = value;
   },
 });
 
@@ -282,13 +155,13 @@ const selectClass =
             Gestión Activa
           </span>
           <span class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
-            <span class="w-2 h-2 rounded-full bg-secondary"></span> 98% con cadencia definida
+            <span class="w-2 h-2 rounded-full bg-secondary"></span> {{ conCadencia }}% con cadencia definida
           </span>
         </div>
         <div class="flex items-baseline gap-4">
           <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Directorio de Relaciones</h1>
           <span class="font-label-lg text-label-lg px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">
-            248 contactos registrados
+            {{ total }} contactos registrados
           </span>
         </div>
         <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
@@ -336,64 +209,27 @@ const selectClass =
 
     <!-- Filtros -->
     <section class="flex flex-col gap-4">
-      <div class="flex items-center justify-between overflow-x-auto pb-1 gap-2">
-        <div class="flex items-center gap-2">
-          <button
-            v-for="filter in circleFilters"
-            :key="filter.key"
-            type="button"
-            class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-2 shrink-0 shadow-sm transition-all"
-            :class="
-              activeCircle === filter.key
-                ? 'bg-primary-container text-on-primary'
-                : 'bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
-            "
-            @click="activeCircle = filter.key"
+      <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <button
+          v-for="filter in circleFilters"
+          :key="filter.key"
+          type="button"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-2 shrink-0 shadow-sm transition-all"
+          :class="
+            activeCircle === filter.key
+              ? 'bg-primary-container text-on-primary'
+              : 'bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+          "
+          @click="activeCircle = filter.key"
+        >
+          <span>{{ filter.label }}</span>
+          <span
+            class="px-1.5 rounded-full font-label-sm text-label-sm"
+            :class="activeCircle === filter.key ? 'bg-on-primary/20 text-on-primary' : 'bg-surface-container text-on-surface-variant'"
           >
-            <span>{{ filter.label }}</span>
-            <span
-              class="px-1.5 rounded-full font-label-sm text-label-sm"
-              :class="
-                activeCircle === filter.key
-                  ? 'bg-on-primary/20 text-on-primary'
-                  : 'bg-surface-container text-on-surface-variant'
-              "
-            >
-              {{ filter.count }}
-            </span>
-          </button>
-        </div>
-
-        <div class="hidden lg:flex items-center gap-1 bg-surface-container-lowest p-1 rounded-lg shadow-sm shrink-0">
-          <button
-            type="button"
-            title="Vista Tabla"
-            class="px-3 py-1.5 rounded-md flex items-center gap-1.5 font-label-sm text-label-sm transition-all"
-            :class="
-              viewMode === 'tabla'
-                ? 'bg-primary-container text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-            "
-            @click="viewMode = 'tabla'"
-          >
-            <span class="material-symbols-outlined text-base">table_rows</span>
-            <span>Tabla</span>
-          </button>
-          <button
-            type="button"
-            title="Vista Cuadrícula"
-            class="px-3 py-1.5 rounded-md flex items-center gap-1.5 font-label-sm text-label-sm transition-all"
-            :class="
-              viewMode === 'cuadricula'
-                ? 'bg-primary-container text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-            "
-            @click="viewMode = 'cuadricula'"
-          >
-            <span class="material-symbols-outlined text-base">grid_view</span>
-            <span>Cuadrícula</span>
-          </button>
-        </div>
+            {{ filter.count }}
+          </span>
+        </button>
       </div>
 
       <div
@@ -406,23 +242,19 @@ const selectClass =
           <input
             v-model="search"
             type="text"
-            placeholder="Buscar por nombre, empresa, etiqueta o ciudad..."
-            class="w-full pl-11 pr-24 py-2.5 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            placeholder="Buscar por nombre, empresa, interés o ciudad..."
+            class="w-full pl-11 pr-4 py-2.5 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
-          <div
-            class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm bg-surface-container-highest px-2 py-0.5 rounded"
-          >
-            <span>Filtro rápido</span>
-          </div>
         </div>
 
         <div class="flex items-center flex-wrap sm:flex-nowrap gap-2.5">
           <div class="relative">
-            <select v-model="healthFilter" :class="selectClass">
-              <option value="all">Salud de relación: Todas</option>
-              <option value="risk">⚠️ En riesgo (&gt;30 días)</option>
-              <option value="good">🟢 Al día con cadencia</option>
-              <option value="recent">⚡ Reciente (&lt;7 días)</option>
+            <select v-model="estadoFilter" :class="selectClass">
+              <option value="all">Próximo paso: Todos</option>
+              <option value="vencido">⚠️ Vencido</option>
+              <option value="pronto">⚡ En los próximos 7 días</option>
+              <option value="programado">🟢 Programado más adelante</option>
+              <option value="sin-fecha">Sin próximo paso</option>
             </select>
             <span
               class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-base"
@@ -431,12 +263,9 @@ const selectClass =
             </span>
           </div>
           <div class="relative">
-            <select v-model="location" :class="selectClass">
+            <select v-model="ciudad" :class="selectClass">
               <option value="all">Ubicación: Todas</option>
-              <option value="madrid">Madrid</option>
-              <option value="barcelona">Barcelona</option>
-              <option value="cdmx">Ciudad de México</option>
-              <option value="remoto">Remoto / Global</option>
+              <option v-for="nombre in ciudades" :key="nombre" :value="nombre">{{ nombre }}</option>
             </select>
             <span
               class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-base"
@@ -446,9 +275,8 @@ const selectClass =
           </div>
           <div class="relative">
             <select v-model="sortBy" :class="selectClass">
-              <option value="urgent">Ordenar: Más urgente</option>
+              <option value="urgent">Ordenar: Próximo paso</option>
               <option value="alpha">Nombre (A-Z)</option>
-              <option value="recent">Último contacto</option>
               <option value="created">Fecha de adición</option>
             </select>
             <span
@@ -457,13 +285,6 @@ const selectClass =
               sort
             </span>
           </div>
-          <button
-            type="button"
-            title="Más filtros"
-            class="p-2.5 bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface rounded-lg transition-all flex items-center justify-center"
-          >
-            <span class="material-symbols-outlined text-lg">tune</span>
-          </button>
         </div>
       </div>
     </section>
@@ -481,22 +302,23 @@ const selectClass =
               <th class="py-3.5 px-4 font-semibold min-w-[150px]">Círculo</th>
               <th class="py-3.5 px-4 font-semibold min-w-[200px]">Empresa &amp; Rol</th>
               <th class="py-3.5 px-4 font-semibold min-w-[140px]">Cadencia</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[220px]">Última Interacción</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[190px]">Próxima Acción</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[200px]">Canal Preferido</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[190px]">Próximo Paso</th>
               <th class="py-3.5 px-6 font-semibold text-right min-w-[140px]">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-on-surface font-body-sm text-body-sm">
             <ContactRow
-              v-for="(contact, i) in filteredContacts"
-              :key="contact.name"
-              v-model:selected="selected[contact.name]"
-              :contact="contact"
+              v-for="(contacto, i) in pageContacts"
+              :key="contacto.id"
+              v-model:selected="selected[contacto.id]"
+              :contacto="contacto"
               :striped="i % 2 === 1"
+              @abrir="$emit('abrir', $event)"
             />
-            <tr v-if="filteredContacts.length === 0">
+            <tr v-if="pageContacts.length === 0">
               <td colspan="8" class="py-10 text-center font-body-sm text-body-sm text-on-surface-variant">
-                No hay contactos que coincidan con los filtros.
+                {{ total ? 'No hay contactos que coincidan con los filtros.' : 'Todavía no hay contactos.' }}
               </td>
             </tr>
           </tbody>
@@ -507,11 +329,8 @@ const selectClass =
       <div class="p-4 bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <span class="font-body-sm text-body-sm text-on-surface-variant">
-            Mostrando
-            <span class="font-semibold text-on-surface">
-              {{ filteredContacts.length ? 1 : 0 }} - {{ filteredContacts.length }}
-            </span>
-            de <span class="font-semibold text-on-surface">248</span> contactos
+            Mostrando <span class="font-semibold text-on-surface">{{ rangeStart }} - {{ rangeEnd }}</span> de
+            <span class="font-semibold text-on-surface">{{ filteredContacts.length }}</span> contactos
           </span>
           <div class="h-4 w-px bg-surface-container-high hidden sm:block"></div>
           <div class="flex items-center gap-2">
@@ -529,49 +348,55 @@ const selectClass =
 
         <div class="flex items-center gap-1.5">
           <button
-            v-for="icon in ['first_page', 'chevron_left']"
-            :key="icon"
             type="button"
-            disabled
-            class="p-2 rounded-lg text-outline-variant hover:bg-surface-container disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            :disabled="page === 1"
+            class="p-2 rounded-lg text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            @click="page = 1"
           >
-            <span class="material-symbols-outlined text-lg">{{ icon }}</span>
+            <span class="material-symbols-outlined text-lg">first_page</span>
+          </button>
+          <button
+            type="button"
+            :disabled="page === 1"
+            class="p-2 rounded-lg text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            @click="page--"
+          >
+            <span class="material-symbols-outlined text-lg">chevron_left</span>
           </button>
           <div class="flex items-center gap-1">
             <button
+              v-for="n in totalPages"
+              :key="n"
               type="button"
-              class="w-8 h-8 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary flex items-center justify-center font-semibold"
+              class="w-8 h-8 rounded-lg font-label-md text-label-md flex items-center justify-center transition-colors"
+              :class="
+                n === page
+                  ? 'bg-primary-container text-on-primary font-semibold'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+              "
+              @click="page = n"
             >
-              1
-            </button>
-            <button
-              v-for="page in [2, 3]"
-              :key="page"
-              type="button"
-              class="w-8 h-8 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center justify-center transition-colors"
-            >
-              {{ page }}
-            </button>
-            <span class="px-1 text-on-surface-variant text-sm">...</span>
-            <button
-              type="button"
-              class="w-8 h-8 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center justify-center transition-colors"
-            >
-              25
+              {{ n }}
             </button>
           </div>
           <button
-            v-for="icon in ['chevron_right', 'last_page']"
-            :key="icon"
             type="button"
-            class="p-2 rounded-lg text-on-surface hover:bg-surface-container transition-colors"
+            :disabled="page === totalPages"
+            class="p-2 rounded-lg text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            @click="page++"
           >
-            <span class="material-symbols-outlined text-lg">{{ icon }}</span>
+            <span class="material-symbols-outlined text-lg">chevron_right</span>
+          </button>
+          <button
+            type="button"
+            :disabled="page === totalPages"
+            class="p-2 rounded-lg text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            @click="page = totalPages"
+          >
+            <span class="material-symbols-outlined text-lg">last_page</span>
           </button>
         </div>
       </div>
     </div>
-
-    <!-- TODO: sección "Salud del Ecosistema" (Quick Insights): el HTML llegó cortado -->
   </div>
 </template>
