@@ -16,7 +16,7 @@ public class PerfilController {
         this.perfil = perfil;
     }
 
-    @PostMapping
+    @PostMapping("perfil")
     public Perfil sacarPerfil() {
         return (Perfil) perfil.sacarUsuario();
     }
