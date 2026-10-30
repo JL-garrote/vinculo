@@ -1,0 +1,46 @@
+# Levanta todo Vínculo: docker compose up -d --build  →  http://localhost:3000
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      # Sin DB_PASSWORD en el .env, root queda sin contraseña (como en XAMPP).
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-}
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "1"
+      MARIADB_DATABASE: vinculo
+      TZ: Europe/Madrid
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+      # Solo se ejecutan la primera vez, cuando el volumen está vacío.
+      - ./docker/mysql:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Solo accesible desde tu propio PC, no desde la red.
+      - "127.0.0.1:3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./vinculo
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/vinculo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-}
+      TZ: Europe/Madrid
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./FrontEnd/fronVinculo
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db-data:
