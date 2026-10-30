@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import ContactRow from '@/components/contactos/ContactRow.vue';
+import NuevoCirculoDialog from '@/components/formularios/NuevoCirculoDialog.vue';
 import { store } from '@/api/store';
 import { estadoProximoPaso, lista, nombreCompleto, parseFecha, type EstadoProximoPaso } from '@/api/format';
 
-defineEmits<{ abrir: [id: number] }>();
+defineEmits<{ abrir: [id: number]; nuevoContacto: [] }>();
+
+const creandoCirculo = ref(false);
 
 interface Metric {
   label: string;
@@ -179,6 +182,7 @@ const selectClass =
         <button
           type="button"
           class="flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-primary transition-all shadow-sm"
+          @click="$emit('nuevoContacto')"
         >
           <span class="material-symbols-outlined text-lg">person_add</span>
           <span>Añadir Contacto</span>
@@ -229,6 +233,13 @@ const selectClass =
           >
             {{ filter.count }}
           </span>
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-1 shrink-0 border border-dashed border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary transition-colors"
+          @click="creandoCirculo = true"
+        >
+          <span class="material-symbols-outlined text-base">add</span> Nuevo círculo
         </button>
       </div>
 
@@ -398,5 +409,11 @@ const selectClass =
         </div>
       </div>
     </div>
+
+    <NuevoCirculoDialog
+      v-if="creandoCirculo"
+      @creado="(c) => { creandoCirculo = false; activeCircle = c.id; }"
+      @cerrar="creandoCirculo = false"
+    />
   </div>
 </template>
