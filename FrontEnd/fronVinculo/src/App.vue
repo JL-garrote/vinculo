@@ -6,14 +6,22 @@ import DashboardView from './views/DashboardView.vue';
 import ContactosView from './views/ContactosView.vue';
 import FichaContactoView from './views/FichaContactoView.vue';
 import PipelineView from './views/PipelineView.vue';
+import NuevoContactoDialog from './components/formularios/NuevoContactoDialog.vue';
 import { cargarDatos, store } from './api/store';
+import type { Contacto } from './api/types';
 
 const section = ref('dashboard');
 const contactoSeleccionado = ref<number | null>(null);
+const creandoContacto = ref(false);
 
 function abrirFicha(id: number) {
   contactoSeleccionado.value = id;
   section.value = 'ficha-contacto';
+}
+
+function contactoCreado(contacto: Contacto) {
+  creandoContacto.value = false;
+  abrirFicha(contacto.id);
 }
 
 onMounted(cargarDatos);
@@ -22,7 +30,7 @@ onMounted(cargarDatos);
 <template>
   <SideVar v-model="section" />
   <div class="pl-64">
-    <TopBar />
+    <TopBar @nuevo-contacto="creandoContacto = true" />
     <main class="w-full pt-16 bg-surface min-h-screen">
       <div
         v-if="store.error"
@@ -51,13 +59,19 @@ onMounted(cargarDatos);
 
       <template v-else>
         <DashboardView v-if="section === 'dashboard'" @abrir="abrirFicha" />
-        <ContactosView v-else-if="section === 'contactos'" @abrir="abrirFicha" />
+        <ContactosView
+          v-else-if="section === 'contactos'"
+          @abrir="abrirFicha"
+          @nuevo-contacto="creandoContacto = true"
+        />
         <FichaContactoView v-else-if="section === 'ficha-contacto'" v-model:contacto-id="contactoSeleccionado" />
-        <PipelineView v-else-if="section === 'pipeline-relacional'" />
+        <PipelineView v-else-if="section === 'pipeline-relacional'" @abrir="abrirFicha" />
         <div v-else class="px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
           Sección en construcción.
         </div>
       </template>
     </main>
   </div>
+
+  <NuevoContactoDialog v-if="creandoContacto" @creado="contactoCreado" @cerrar="creandoContacto = false" />
 </template>

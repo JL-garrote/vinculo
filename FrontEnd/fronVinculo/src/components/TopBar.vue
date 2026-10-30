@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { store } from '@/api/store';
 import AvatarContacto from './AvatarContacto.vue';
 
+defineEmits<{ nuevoContacto: [] }>();
+
 const nombre = computed(() => store.perfil?.nombre ?? 'Mi perfil');
 const subtitulo = computed(() => store.perfil?.email ?? store.perfil?.zonaHoraria ?? '');
 </script>
@@ -31,6 +33,7 @@ const subtitulo = computed(() => store.perfil?.email ?? store.perfil?.zonaHorari
       <button
         type="button"
         class="flex items-center gap-2 px-3.5 py-2 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-primary transition-colors shadow-sm"
+        @click="$emit('nuevoContacto')"
       >
         <span class="material-symbols-outlined text-base">add</span>
         <span>Nuevo Contacto</span>

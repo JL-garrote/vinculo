@@ -1,4 +1,11 @@
-import type { CanalPreferido, Contacto, TipoNota } from './types';
+import type {
+  CanalPreferido,
+  Contacto,
+  EtapaPipeline,
+  PrioridadPipeline,
+  TipoInteraccion,
+  TipoNota,
+} from './types';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -97,6 +104,79 @@ export const tiposNota: Record<TipoNota, { label: string; icon: string; clase: s
   preferencia: { label: 'Preferencia', icon: 'tune', clase: 'bg-primary-fixed text-primary-container' },
   recurso: { label: 'Recurso', icon: 'auto_stories', clase: 'bg-secondary/10 text-secondary' },
 };
+
+export const etapas: { key: EtapaPipeline; titulo: string; dot: string; header: string; count: string }[] = [
+  {
+    key: 'identificado',
+    titulo: 'Identificados',
+    dot: 'bg-outline',
+    header: 'bg-surface-container-low',
+    count: 'bg-surface-container-highest text-on-surface-variant',
+  },
+  {
+    key: 'primer_contacto',
+    titulo: 'Primer Contacto',
+    dot: 'bg-on-tertiary-container',
+    header: 'bg-surface-container-low',
+    count: 'bg-surface-container-highest text-on-surface-variant',
+  },
+  {
+    key: 'reunion',
+    titulo: 'Reunión / Café',
+    dot: 'bg-primary',
+    header: 'bg-surface-container-low',
+    count: 'bg-surface-container-highest text-on-surface-variant',
+  },
+  {
+    key: 'seguimiento',
+    titulo: 'Seguimiento Activo',
+    dot: 'bg-secondary',
+    header: 'bg-surface-container-low',
+    count: 'bg-surface-container-highest text-on-surface-variant',
+  },
+  {
+    key: 'aliado',
+    titulo: 'Relación Establecida',
+    dot: 'bg-secondary',
+    header: 'bg-secondary-fixed/40',
+    count: 'bg-secondary text-on-secondary',
+  },
+];
+
+export const prioridades: Record<PrioridadPipeline, { label: string; badge: string; dot: string }> = {
+  alta: { label: 'Alta', badge: 'text-error bg-error-container', dot: 'bg-error' },
+  media: { label: 'Media', badge: 'text-on-tertiary-fixed-variant bg-tertiary-fixed', dot: 'bg-on-tertiary-container' },
+  baja: { label: 'Baja', badge: 'text-outline bg-surface-container-high', dot: 'bg-outline' },
+};
+
+export const tiposInteraccion: Record<TipoInteraccion, { label: string; icon: string; clase: string }> = {
+  cafe: { label: 'Café', icon: 'local_cafe', clase: 'bg-secondary-container text-on-secondary-container' },
+  comida: { label: 'Comida', icon: 'restaurant', clase: 'bg-secondary-container text-on-secondary-container' },
+  reunion: { label: 'Reunión', icon: 'groups', clase: 'bg-secondary-container text-on-secondary-container' },
+  llamada: { label: 'Llamada', icon: 'phone_in_talk', clase: 'bg-primary-fixed text-on-primary-fixed' },
+  videollamada: { label: 'Videollamada', icon: 'video_call', clase: 'bg-primary-fixed text-on-primary-fixed' },
+  mensaje: { label: 'Mensaje', icon: 'chat', clase: 'bg-tertiary-fixed text-on-tertiary-fixed' },
+  email: { label: 'Email', icon: 'mail', clase: 'bg-tertiary-fixed text-on-tertiary-fixed' },
+  evento: { label: 'Evento', icon: 'celebration', clase: 'bg-surface-container-high text-on-surface-variant' },
+  introduccion: { label: 'Presentación', icon: 'handshake', clase: 'bg-surface-container-high text-on-surface-variant' },
+  otro: { label: 'Nota libre', icon: 'edit_note', clase: 'bg-surface-container-high text-on-surface-variant' },
+};
+
+/** Fecha y hora local en el formato del backend: YYYY-MM-DD HH:mm:ss */
+export function fechaBackend(fecha = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${fecha.getFullYear()}-${p(fecha.getMonth() + 1)}-${p(fecha.getDate())} ${p(fecha.getHours())}:${p(fecha.getMinutes())}:${p(fecha.getSeconds())}`;
+}
+
+/** "YYYY-MM-DD HH:mm:ss" del backend → valor de <input type="datetime-local"> */
+export function aInputFecha(texto: string | null): string {
+  return texto ? texto.slice(0, 16).replace(' ', 'T') : '';
+}
+
+/** Valor de <input type="datetime-local"> → "YYYY-MM-DD HH:mm:ss" para el backend */
+export function desdeInputFecha(valor: string): string | null {
+  return valor ? `${valor.replace('T', ' ')}:00` : null;
+}
 
 /** Color hexadecimal con transparencia (#RRGGBB + alfa en hex) */
 export function conAlfa(hex: string, alfa: number): string {

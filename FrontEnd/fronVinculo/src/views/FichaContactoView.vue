@@ -1,26 +1,31 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import InteractionLogger, {
   type InteractionType,
   type NewInteraction,
 } from '@/components/ficha/InteractionLogger.vue';
 import AvatarContacto from '@/components/AvatarContacto.vue';
-import { circuloDe, contactoPorId, notasDe, store } from '@/api/store';
+import NuevaNotaForm from '@/components/formularios/NuevaNotaForm.vue';
+import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
+import { circuloDe, contactoPorId, notasDe, recargarRecordatorios, store } from '@/api/store';
+import { api, mensajeError } from '@/api/vinculo';
 import {
   canales,
   conAlfa,
   diasHasta,
   estadoProximoPaso,
   estiloEstado,
+  fechaBackend,
   formatoFecha,
   lista,
   nombreCompleto,
   parseFecha,
   proximoCumple,
   textoDias,
+  tiposInteraccion,
   tiposNota,
 } from '@/api/format';
-import type { Contacto } from '@/api/types';
+import type { Contacto, Interaccion, Recordatorio, TipoInteraccion } from '@/api/types';
 
 const contactoId = defineModel<number | null>('contactoId', { default: null });
 
@@ -85,66 +90,90 @@ const haPresentado = computed(() =>
 );
 const intereses = computed(() => lista(contacto.value?.intereses ?? null));
 
-// Interacciones: el backend aún no las expone, así que solo viven en memoria
-interface TimelineEntry {
-  id: number;
-  title: string;
-  badge: string;
-  badgeClass: string;
-  icon: string;
-  iconClass: string;
-  date: string;
-  text: string;
-  tags?: string[];
+// ---------- Interacciones y recordatorios del contacto (desde el backend) ----------
+
+const interacciones = ref<Interaccion[]>([]);
+const recordatorios = ref<Recordatorio[]>([]);
+const cargandoHistorial = ref(false);
+const errorHistorial = ref<string | null>(null);
+
+async function cargarHistorial(id: number) {
+  cargandoHistorial.value = true;
+  errorHistorial.value = null;
+  try {
+    const [inter, rec] = await Promise.all([api.interaccionesDe(id), api.recordatoriosDe(id)]);
+    // Si mientras tanto se cambió de contacto, se descarta la respuesta
+    if (contacto.value?.id !== id) return;
+    interacciones.value = inter;
+    recordatorios.value = rec;
+  } catch (e) {
+    errorHistorial.value = mensajeError(e);
+  } finally {
+    cargandoHistorial.value = false;
+  }
 }
 
-const typeStyles: Record<InteractionType, Omit<TimelineEntry, 'id' | 'date' | 'text' | 'tags'>> = {
-  cafe: {
-    title: 'Café / encuentro presencial',
-    badge: 'Presencial',
-    badgeClass: 'bg-secondary-container/50 text-on-secondary-container',
-    icon: 'local_cafe',
-    iconClass: 'bg-secondary-container text-on-secondary-container',
+watch(
+  () => contacto.value?.id,
+  (id) => {
+    interacciones.value = [];
+    recordatorios.value = [];
+    if (id !== undefined) cargarHistorial(id);
   },
-  llamada: {
-    title: 'Llamada',
-    badge: 'Llamada',
-    badgeClass: 'bg-primary-fixed text-on-primary-fixed',
-    icon: 'phone_in_talk',
-    iconClass: 'bg-primary-fixed text-on-primary-fixed',
-  },
-  mensaje: {
-    title: 'Mensaje',
-    badge: 'Mensaje',
-    badgeClass: 'bg-surface-container text-on-surface-variant',
-    icon: 'chat',
-    iconClass: 'bg-tertiary-fixed text-on-tertiary-fixed',
-  },
-  nota: {
-    title: 'Nota libre',
-    badge: 'Nota',
-    badgeClass: 'bg-surface-container text-on-surface-variant',
-    icon: 'edit_note',
-    iconClass: 'bg-surface-container-high text-on-surface-variant',
-  },
+  { immediate: true },
+);
+
+const timeline = computed(() =>
+  interacciones.value.map((i) => {
+    const tipo = tiposInteraccion[i.tipo] ?? tiposInteraccion.otro;
+    const fecha = parseFecha(i.fecha);
+    return {
+      ...i,
+      tipoInfo: tipo,
+      fechaTexto: fecha ? `${formatoFecha(fecha, true)} • ${textoDias(diasHasta(fecha))}` : '',
+      tags: lista(i.temas).map((t) => `#${t}`),
+    };
+  }),
+);
+
+// Pestañas del registro → tipos de interacción del backend
+const tipoBackend: Record<InteractionType, TipoInteraccion> = {
+  cafe: 'cafe',
+  llamada: 'llamada',
+  mensaje: 'mensaje',
+  nota: 'otro',
 };
 
-const interacciones = ref<Record<number, TimelineEntry[]>>({});
-const timeline = computed(() => (contacto.value ? (interacciones.value[contacto.value.id] ?? []) : []));
-
-function addInteraction({ type, text, topics }: NewInteraction) {
+async function guardarInteraccion({ type, text, topics, borrador }: NewInteraction) {
   if (!contacto.value) return;
-  const id = contacto.value.id;
-  interacciones.value[id] = [
-    {
-      id: Date.now(),
-      ...typeStyles[type],
-      date: formatoFecha(new Date(), true),
-      text,
-      tags: topics.length ? topics.map((t) => `#${t}`) : undefined,
-    },
-    ...(interacciones.value[id] ?? []),
-  ];
+  const tipo = tipoBackend[type];
+  const nueva = await api.crearInteraccion({
+    contactoID: contacto.value.id,
+    tipo,
+    titulo: tiposInteraccion[tipo].label,
+    fecha: fechaBackend(),
+    resumen: text,
+    temas: topics.length ? topics.join(',') : null,
+    borrador,
+  });
+  interacciones.value = [nueva, ...interacciones.value];
+  // Una interacción puede completar recordatorios pendientes (trigger de la base de datos)
+  if (!borrador) {
+    const [rec] = await Promise.all([api.recordatoriosDe(contacto.value.id), recargarRecordatorios()]);
+    recordatorios.value = rec;
+  }
+}
+
+const recordatoriosPendientes = computed(() => recordatorios.value.filter((r) => r.estado === 'pendiente'));
+
+// ---------- Altas desde la ficha ----------
+
+const creandoNota = ref(false);
+const programando = ref(false);
+
+function recordatorioCreado(r: Recordatorio) {
+  programando.value = false;
+  if (r.contactoID === contacto.value?.id) recordatorios.value = [...recordatorios.value, r];
 }
 
 const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
@@ -270,6 +299,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
           <button
             type="button"
             class="flex items-center gap-2 px-3.5 py-2.5 bg-surface-container text-on-surface rounded-lg font-label-lg text-label-lg hover:bg-surface-container-high transition-colors"
+            @click="programando = true"
           >
             <span class="material-symbols-outlined text-base">alarm</span>
             <span>Programar Toque</span>
@@ -363,12 +393,27 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
                 push_pin
               </span>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Notas</h2>
+              <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                {{ notas.length }}
+              </span>
             </div>
-            <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
-              {{ notas.length }}
-            </span>
+            <button
+              v-if="!creandoNota"
+              type="button"
+              class="font-label-sm text-label-sm text-primary hover:underline"
+              @click="creandoNota = true"
+            >
+              + Añadir
+            </button>
           </div>
-          <p v-if="!notas.length" class="font-body-sm text-body-sm text-on-surface-variant">
+          <NuevaNotaForm
+            v-if="creandoNota"
+            :key="contacto.id"
+            :contacto-id="contacto.id"
+            @creada="creandoNota = false"
+            @cancelar="creandoNota = false"
+          />
+          <p v-if="!notas.length && !creandoNota" class="font-body-sm text-body-sm text-on-surface-variant">
             Este contacto todavía no tiene notas.
           </p>
           <div
@@ -393,6 +438,51 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             <span class="font-label-sm text-label-sm text-outline">
               {{ parseFecha(nota.creadoEn) ? formatoFecha(parseFecha(nota.creadoEn)!) : '' }}
             </span>
+          </div>
+        </div>
+
+        <!-- Recordatorios -->
+        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-primary-fixed text-primary-container material-symbols-outlined text-lg">alarm</span>
+              <h2 class="font-headline-sm text-headline-sm text-on-surface">Recordatorios</h2>
+              <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+                {{ recordatoriosPendientes.length }} pendientes
+              </span>
+            </div>
+            <button type="button" class="font-label-sm text-label-sm text-primary hover:underline" @click="programando = true">
+              + Programar
+            </button>
+          </div>
+          <p v-if="!recordatorios.length" class="font-body-sm text-body-sm text-on-surface-variant">
+            Sin recordatorios para este contacto.
+          </p>
+          <div
+            v-for="r in recordatorios"
+            :key="r.id"
+            class="flex items-start gap-3 p-3 rounded-lg"
+            :class="r.estado === 'pendiente' ? 'bg-surface-container-low' : 'bg-surface-container-low/50 opacity-70'"
+          >
+            <span
+              class="material-symbols-outlined text-base mt-0.5"
+              :class="r.estado === 'pendiente' ? 'text-primary' : 'text-secondary'"
+            >
+              {{ r.estado === 'pendiente' ? 'schedule' : r.estado === 'completado' ? 'task_alt' : 'block' }}
+            </span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <span class="font-label-lg text-label-lg text-on-surface" :class="{ 'line-through': r.estado !== 'pendiente' }">
+                {{ r.titulo }}
+              </span>
+              <span v-if="r.descripcion" class="font-body-sm text-body-sm text-on-surface-variant">{{ r.descripcion }}</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant">
+                <template v-if="parseFecha(r.venceEnFecha)">
+                  {{ formatoFecha(parseFecha(r.venceEnFecha)!, true) }} · {{ textoDias(diasHasta(parseFecha(r.venceEnFecha)!)) }}
+                </template>
+                <template v-if="r.recurrenciaDias"> · cada {{ r.recurrenciaDias }} días</template>
+                <template v-if="r.estado !== 'pendiente'"> · {{ r.estado }}</template>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -456,7 +546,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
 
       <!-- Columna derecha -->
       <div class="lg:col-span-7 flex flex-col gap-6">
-        <InteractionLogger ref="logger" @save="addInteraction" />
+        <InteractionLogger ref="logger" :guardar="guardarInteraccion" />
 
         <!-- Historial -->
         <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
@@ -467,14 +557,17 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             <div>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Memoria Relacional &amp; Historial</h2>
               <span class="font-label-sm text-label-sm text-on-surface-variant">
-                {{ timeline.length }} interacciones en esta sesión
+                {{ timeline.length }} interacciones registradas
               </span>
             </div>
           </div>
 
-          <p v-if="!timeline.length" class="font-body-sm text-body-sm text-on-surface-variant">
-            Aún no hay interacciones. Las que registres aquí se ven en esta sesión, pero no se guardan: el backend todavía
-            no tiene endpoints de interacciones.
+          <p v-if="errorHistorial" class="p-3 rounded-lg bg-error-container text-on-error-container font-body-sm text-body-sm">
+            No se pudo cargar el historial: {{ errorHistorial }}
+          </p>
+          <p v-else-if="cargandoHistorial" class="font-body-sm text-body-sm text-on-surface-variant">Cargando historial…</p>
+          <p v-else-if="!timeline.length" class="font-body-sm text-body-sm text-on-surface-variant">
+            Aún no hay interacciones con este contacto. Registra la primera arriba.
           </p>
 
           <div
@@ -484,20 +577,31 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             <div v-for="entry in timeline" :key="entry.id" class="relative flex flex-col gap-2">
               <div
                 class="absolute -left-6 top-1 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface-container-lowest"
-                :class="entry.iconClass"
+                :class="entry.tipoInfo.clase"
               >
-                <span class="material-symbols-outlined text-xs">{{ entry.icon }}</span>
+                <span class="material-symbols-outlined text-xs">{{ entry.tipoInfo.icon }}</span>
               </div>
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <div class="flex items-center gap-2">
-                  <span class="font-label-lg text-label-lg text-on-surface">{{ entry.title }}</span>
-                  <span class="px-2 rounded-full font-label-sm text-label-sm" :class="entry.badgeClass">{{ entry.badge }}</span>
+                  <span class="font-label-lg text-label-lg text-on-surface">{{ entry.titulo ?? entry.tipoInfo.label }}</span>
+                  <span class="px-2 rounded-full font-label-sm text-label-sm" :class="entry.tipoInfo.clase">
+                    {{ entry.tipoInfo.label }}
+                  </span>
+                  <span
+                    v-if="entry.borrador"
+                    class="px-2 rounded-full font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant"
+                  >
+                    Borrador
+                  </span>
                 </div>
-                <span class="font-label-sm text-label-sm text-on-surface-variant">{{ entry.date }}</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">{{ entry.fechaTexto }}</span>
               </div>
               <div class="bg-surface-container-low rounded-lg flex flex-col gap-2 p-4">
-                <p class="font-body-md text-body-md text-on-surface">{{ entry.text }}</p>
-                <div v-if="entry.tags" class="flex flex-wrap items-center gap-1.5 pt-1">
+                <p v-if="entry.lugar" class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                  <span class="material-symbols-outlined text-xs">location_on</span> {{ entry.lugar }}
+                </p>
+                <p class="font-body-md text-body-md text-on-surface">{{ entry.resumen ?? 'Sin resumen.' }}</p>
+                <div v-if="entry.tags.length" class="flex flex-wrap items-center gap-1.5 pt-1">
                   <span
                     v-for="tag in entry.tags"
                     :key="tag"
@@ -512,5 +616,12 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
         </div>
       </div>
     </div>
+
+    <RecordatorioDialog
+      v-if="programando"
+      :contacto-id-inicial="contacto.id"
+      @creado="recordatorioCreado"
+      @cerrar="programando = false"
+    />
   </div>
 </template>

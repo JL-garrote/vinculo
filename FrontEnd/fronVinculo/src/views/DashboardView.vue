@@ -1,17 +1,37 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import KpiCard, { type Kpi } from '@/components/dashboard/KpiCard.vue';
 import AttentionCard from '@/components/dashboard/AttentionCard.vue';
+import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
 import { contactoPorId, store } from '@/api/store';
 import {
+  diasHasta,
   estadoProximoPaso,
   formatoFecha,
   nombreCompleto,
   parseFecha,
+  textoDias,
   tiposNota,
 } from '@/api/format';
 
 defineEmits<{ abrir: [id: number] }>();
+
+const programando = ref(false);
+
+// Próximos recordatorios pendientes (ya vienen ordenados por fecha de vencimiento)
+const recordatorios = computed(() =>
+  store.recordatorios.slice(0, 5).map((r) => {
+    const fecha = parseFecha(r.venceEnFecha);
+    const dias = fecha ? diasHasta(fecha) : null;
+    const contacto = r.contactoID > 0 ? contactoPorId(r.contactoID) : undefined;
+    return {
+      ...r,
+      contacto,
+      cuando: dias === null ? '' : textoDias(dias),
+      clase: dias !== null && dias < 0 ? 'text-error' : dias !== null && dias <= 2 ? 'text-tertiary-container' : 'text-on-surface-variant',
+    };
+  }),
+);
 
 const hoy = new Date();
 const fechaHoy = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -162,6 +182,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
         <button
           type="button"
           class="flex items-center gap-2 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary rounded-lg text-label-lg font-label-lg transition-all shadow-sm"
+          @click="programando = true"
         >
           <span class="material-symbols-outlined text-base">alarm_add</span>
           <span>Programar Recordatorio</span>
@@ -245,8 +266,49 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
         </div>
       </div>
 
-      <!-- Círculos -->
+      <!-- Recordatorios y círculos -->
       <div class="lg:col-span-5 flex flex-col gap-5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary-container text-xl">alarm</span>
+            <h2 class="text-headline-sm font-headline-sm text-on-surface">Recordatorios</h2>
+          </div>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ store.recordatorios.length }} pendientes</span>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-2">
+          <p v-if="!recordatorios.length" class="p-2 font-body-sm text-body-sm text-on-surface-variant">
+            No tienes recordatorios pendientes.
+          </p>
+          <div
+            v-for="r in recordatorios"
+            :key="r.id"
+            class="flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-surface-container-low transition-colors"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="material-symbols-outlined text-base text-primary">schedule</span>
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-lg text-label-lg text-on-surface truncate">{{ r.titulo }}</span>
+                <button
+                  v-if="r.contacto"
+                  type="button"
+                  class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary text-left truncate"
+                  @click="$emit('abrir', r.contacto.id)"
+                >
+                  {{ nombreCompleto(r.contacto) }}
+                </button>
+              </div>
+            </div>
+            <span class="font-label-sm text-label-sm whitespace-nowrap" :class="r.clase">{{ r.cuando }}</span>
+          </div>
+          <button
+            type="button"
+            class="self-start px-2.5 py-1 font-label-sm text-label-sm text-primary hover:underline"
+            @click="programando = true"
+          >
+            + Programar recordatorio
+          </button>
+        </div>
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-secondary text-xl">hub</span>
@@ -316,5 +378,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
         </div>
       </div>
     </div>
+
+    <RecordatorioDialog v-if="programando" @creado="programando = false" @cerrar="programando = false" />
   </div>
 </template>
