@@ -22,11 +22,7 @@ const active = defineModel<string>({ default: 'dashboard' });
   >
     <div class="flex flex-col gap-8">
       <div class="flex items-center gap-3 px-2">
-        <img
-          alt="Vínculo CRM Logo"
-          class="h-8 w-auto object-contain"
-          src="https://lh3.googleusercontent.com/aida/AEtjO1U8hZvNywSZrh6x26qIc6sMeizN968yMF-AS9u-3GWwSIDCcTVu_h7BoNKA81VF5GvERF_anVhqD40AD5wE4gtYEaAa-e-H-KJEhkfkHgq7Ob-As6pnnBfVxwYUCXcBShe6ly5PSH7sVodJV9ASPRn5o_2xWIRycHt3O0XEaog3hu6TrgP7ylybFkms-jylW-QCK7ObBuyTf9hqlAcFYeL-0LjnldZGSEKV-D7-LlnDZcw8YU54pfJGpz8"
-        />
+        <img alt="Vínculo" class="h-7 w-auto" src="/logo.svg" />
         <div class="flex flex-col">
           <span class="font-headline-sm text-headline-sm text-on-surface leading-none">Vínculo</span>
           <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase mt-0.5">
