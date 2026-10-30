@@ -71,8 +71,8 @@ defineExpose({ focus });
 </script>
 
 <template>
-  <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
-    <div class="flex items-center justify-between">
+  <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
         <span class="material-symbols-outlined text-primary">add_comment</span>
         <span>Registrar Nueva Interacción</span>
@@ -81,7 +81,7 @@ defineExpose({ focus });
     </div>
 
     <!-- Canal -->
-    <div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
+    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
       <button
         v-for="tab in tabs"
         :key="tab.type"
@@ -129,7 +129,7 @@ defineExpose({ focus });
           </button>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
             class="px-3 py-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors disabled:opacity-50"
@@ -140,8 +140,8 @@ defineExpose({ focus });
           </button>
           <button
             type="button"
-            class="px-4 py-1.5 text-on-primary font-label-md text-label-md rounded-lg transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50"
-            :class="saved === 'registro' ? 'bg-secondary' : 'bg-primary-container hover:bg-primary'"
+            class="px-4 py-1.5 font-label-md text-label-md rounded-lg transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50"
+            :class="saved === 'registro' ? 'bg-secondary text-on-secondary' : 'bg-primary-container hover:bg-primary text-on-primary'"
             :disabled="saving"
             @click="save(false)"
           >

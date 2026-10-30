@@ -67,7 +67,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
           <option v-for="c in contactosOrdenados" :key="c.id" :value="c.id">{{ nombreCompleto(c) }}</option>
         </select>
       </label>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="flex flex-col gap-1.5">
           <span :class="etiqueta">Vence *</span>
           <input v-model="venceEn" type="datetime-local" required :class="campo" />

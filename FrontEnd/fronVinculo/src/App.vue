@@ -13,6 +13,8 @@ import type { Contacto } from './api/types';
 const section = ref('dashboard');
 const contactoSeleccionado = ref<number | null>(null);
 const creandoContacto = ref(false);
+// Menú lateral en pantallas pequeñas (en escritorio siempre está visible)
+const menuAbierto = ref(false);
 
 function abrirFicha(id: number) {
   contactoSeleccionado.value = id;
@@ -28,13 +30,13 @@ onMounted(cargarDatos);
 </script>
 
 <template>
-  <SideVar v-model="section" />
-  <div class="pl-64">
-    <TopBar @nuevo-contacto="creandoContacto = true" />
+  <SideVar v-model="section" :abierto="menuAbierto" @cerrar="menuAbierto = false" />
+  <div class="lg:pl-64">
+    <TopBar @nuevo-contacto="creandoContacto = true" @abrir-menu="menuAbierto = true" />
     <main class="w-full pt-16 bg-surface min-h-screen">
       <div
         v-if="store.error"
-        class="mx-8 mt-6 p-4 rounded-xl bg-error-container text-on-error-container flex items-center justify-between gap-4"
+        class="mx-4 sm:mx-6 lg:mx-8 mt-6 p-4 rounded-xl bg-error-container text-on-error-container flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined">cloud_off</span>
@@ -45,14 +47,14 @@ onMounted(cargarDatos);
         </div>
         <button
           type="button"
-          class="px-3 py-1.5 rounded-lg bg-error text-on-error font-label-md text-label-md shrink-0"
+          class="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-error text-on-error font-label-md text-label-md shrink-0"
           @click="cargarDatos"
         >
           Reintentar
         </button>
       </div>
 
-      <div v-if="store.cargando" class="px-8 py-16 flex items-center justify-center gap-3 text-on-surface-variant">
+      <div v-if="store.cargando" class="px-4 sm:px-8 py-16 flex items-center justify-center gap-3 text-on-surface-variant">
         <span class="material-symbols-outlined animate-spin">progress_activity</span>
         <span class="font-body-md text-body-md">Cargando datos…</span>
       </div>
@@ -66,7 +68,7 @@ onMounted(cargarDatos);
         />
         <FichaContactoView v-else-if="section === 'ficha-contacto'" v-model:contacto-id="contactoSeleccionado" />
         <PipelineView v-else-if="section === 'pipeline-relacional'" @abrir="abrirFicha" />
-        <div v-else class="px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
+        <div v-else class="px-4 sm:px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
           Sección en construcción.
         </div>
       </template>

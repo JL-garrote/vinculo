@@ -147,11 +147,11 @@ const selectClass =
 </script>
 
 <template>
-  <div class="px-8 py-8 flex flex-col gap-8 max-w-[1600px] mx-auto w-full">
+  <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 max-w-[1600px] mx-auto w-full">
     <!-- Cabecera -->
     <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
       <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <span
             class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm uppercase tracking-wider"
           >
@@ -161,8 +161,8 @@ const selectClass =
             <span class="w-2 h-2 rounded-full bg-secondary"></span> {{ conCadencia }}% con cadencia definida
           </span>
         </div>
-        <div class="flex items-baseline gap-4">
-          <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Directorio de Relaciones</h1>
+        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface tracking-tight">Directorio de Relaciones</h1>
           <span class="font-label-lg text-label-lg px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">
             {{ total }} contactos registrados
           </span>
@@ -171,7 +171,7 @@ const selectClass =
           Cultiva conexiones humanas a largo plazo con intención, ritmos periódicos y contexto enriquecido.
         </p>
       </div>
-      <div class="flex items-center gap-3 self-start md:self-auto">
+      <div class="flex flex-wrap items-center gap-3 self-start md:self-auto">
         <button
           type="button"
           class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface rounded-lg font-label-lg text-label-lg hover:bg-surface-container transition-all shadow-sm"
@@ -306,16 +306,16 @@ const selectClass =
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-surface-container-low/70 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
-              <th class="py-3.5 px-6 font-semibold w-12 text-center">
+              <th class="py-3.5 px-6 font-semibold w-12 text-center hidden sm:table-cell">
                 <input v-model="allSelected" type="checkbox" class="w-4 h-4 rounded cursor-pointer accent-primary-container" />
               </th>
-              <th class="py-3.5 px-4 font-semibold min-w-[280px]">Nombre &amp; Intereses</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[150px]">Círculo</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[200px]">Empresa &amp; Rol</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[140px]">Cadencia</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[200px]">Canal Preferido</th>
-              <th class="py-3.5 px-4 font-semibold min-w-[190px]">Próximo Paso</th>
-              <th class="py-3.5 px-6 font-semibold text-right min-w-[140px]">Acciones</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[200px] sm:min-w-[260px]">Nombre &amp; Intereses</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[150px] hidden md:table-cell">Círculo</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[200px] hidden lg:table-cell">Empresa &amp; Rol</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[140px] hidden 2xl:table-cell">Cadencia</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[200px] hidden xl:table-cell">Canal Preferido</th>
+              <th class="py-3.5 px-4 font-semibold min-w-[190px] hidden sm:table-cell">Próximo Paso</th>
+              <th class="py-3.5 px-4 sm:px-6 font-semibold text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-on-surface font-body-sm text-body-sm">
@@ -338,7 +338,7 @@ const selectClass =
 
       <!-- Paginación -->
       <div class="p-4 bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center justify-center gap-3">
           <span class="font-body-sm text-body-sm text-on-surface-variant">
             Mostrando <span class="font-semibold text-on-surface">{{ rangeStart }} - {{ rangeEnd }}</span> de
             <span class="font-semibold text-on-surface">{{ filteredContacts.length }}</span> contactos
@@ -357,7 +357,7 @@ const selectClass =
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5">
+        <div class="flex flex-wrap items-center justify-center gap-1.5">
           <button
             type="button"
             :disabled="page === 1"
@@ -374,7 +374,7 @@ const selectClass =
           >
             <span class="material-symbols-outlined text-lg">chevron_left</span>
           </button>
-          <div class="flex items-center gap-1">
+          <div class="flex flex-wrap items-center gap-1">
             <button
               v-for="n in totalPages"
               :key="n"

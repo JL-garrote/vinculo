@@ -38,7 +38,7 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
 
 <template>
   <tr class="hover:bg-surface-container-low transition-colors group" :class="{ 'bg-surface/30': striped }">
-    <td class="py-4 px-6 text-center">
+    <td class="py-4 px-6 text-center hidden sm:table-cell">
       <input v-model="selected" type="checkbox" class="w-4 h-4 rounded cursor-pointer accent-primary-container" />
     </td>
 
@@ -75,12 +75,22 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
               {{ interes }}
             </span>
           </div>
+          <!-- En pantallas estrechas las columnas de círculo y próximo paso se ocultan: resumen aquí -->
+          <div v-if="circulo || fechaPaso" class="md:hidden flex items-center gap-2 mt-1 flex-wrap font-label-sm text-label-sm">
+            <span v-if="circulo" class="flex items-center gap-1" :style="{ color: circulo.color }">
+              <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: circulo.color }"></span>
+              {{ circulo.nombre }}
+            </span>
+            <span v-if="fechaPaso" class="sm:hidden" :class="estiloEstado[estado].texto">
+              {{ textoDias(diasHasta(fechaPaso)) }}
+            </span>
+          </div>
         </div>
       </div>
     </td>
 
     <!-- Círculo -->
-    <td class="py-4 px-4">
+    <td class="py-4 px-4 hidden md:table-cell">
       <span
         v-if="circulo"
         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold"
@@ -93,7 +103,7 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
     </td>
 
     <!-- Empresa & Rol -->
-    <td class="py-4 px-4">
+    <td class="py-4 px-4 hidden lg:table-cell">
       <div class="flex flex-col">
         <span class="font-label-md text-label-md text-on-surface font-semibold">{{ contacto.cargo ?? '—' }}</span>
         <span class="font-body-sm text-body-sm text-on-surface-variant">{{ contacto.empresa ?? '' }}</span>
@@ -101,14 +111,14 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
     </td>
 
     <!-- Cadencia -->
-    <td class="py-4 px-4">
+    <td class="py-4 px-4 hidden 2xl:table-cell">
       <span class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-md">
         {{ cadencia ? `Cada ${cadencia} días` : 'Sin definir' }}
       </span>
     </td>
 
     <!-- Canal preferido -->
-    <td class="py-4 px-4">
+    <td class="py-4 px-4 hidden xl:table-cell">
       <div class="flex flex-col">
         <span class="font-label-md text-label-md text-on-surface font-medium flex items-center gap-1.5">
           <span class="material-symbols-outlined text-base text-primary">{{ canal?.icon ?? 'help' }}</span>
@@ -121,7 +131,7 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
     </td>
 
     <!-- Próximo paso -->
-    <td class="py-4 px-4">
+    <td class="py-4 px-4 hidden sm:table-cell">
       <div v-if="contacto.proximoPaso || fechaPaso" class="flex items-start gap-2.5">
         <div
           class="w-2 h-2 rounded-full shrink-0 mt-1.5"
@@ -144,13 +154,13 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
     </td>
 
     <!-- Acciones -->
-    <td class="py-4 px-6 text-right">
+    <td class="py-4 px-4 sm:px-6 text-right">
       <div class="flex items-center justify-end gap-1 text-on-surface-variant">
         <a
           v-if="telefono"
           :href="`tel:${telefono}`"
           title="Llamar"
-          class="p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+          class="hidden sm:block p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
         >
           <span class="material-symbols-outlined text-lg">call</span>
         </a>
@@ -160,7 +170,7 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
           target="_blank"
           rel="noopener"
           title="WhatsApp"
-          class="p-1.5 hover:text-secondary hover:bg-surface-container rounded-lg transition-colors"
+          class="hidden sm:block p-1.5 hover:text-secondary hover:bg-surface-container rounded-lg transition-colors"
         >
           <span class="material-symbols-outlined text-lg">chat</span>
         </a>
@@ -168,7 +178,7 @@ const telefono = computed(() => props.contacto.telefono?.replace(/[^\d+]/g, '') 
           v-if="contacto.email"
           :href="`mailto:${contacto.email}`"
           title="Email"
-          class="p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
+          class="hidden sm:block p-1.5 hover:text-primary hover:bg-surface-container rounded-lg transition-colors"
         >
           <span class="material-symbols-outlined text-lg">mail</span>
         </a>

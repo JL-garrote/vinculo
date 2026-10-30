@@ -45,7 +45,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         <span :class="etiqueta">Nombre *</span>
         <input v-model="nombre" maxlength="100" required autofocus placeholder="Ej. Antiguos compañeros" :class="campo" />
       </label>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label class="flex flex-col gap-1.5">
           <span :class="etiqueta">Color</span>
           <div class="flex items-center gap-2">

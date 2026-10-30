@@ -14,21 +14,35 @@ const mainNav: NavItem[] = [
 
 // Sección activa, controlada desde App.vue con v-model
 const active = defineModel<string>({ default: 'dashboard' });
+// abierto: solo afecta a pantallas pequeñas, donde el menú se despliega encima del contenido
+defineProps<{ abierto?: boolean }>();
+defineEmits<{ cerrar: [] }>();
 </script>
 
 <template>
+  <div v-if="abierto" class="fixed inset-0 z-50 bg-scrim lg:hidden" @click="$emit('cerrar')"></div>
   <aside
-    class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between py-6 px-4"
+    class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between py-6 px-4 overflow-y-auto transition-transform duration-200 lg:translate-x-0"
+    :class="abierto ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="flex flex-col gap-8">
       <div class="flex items-center gap-3 px-2">
-        <img alt="Vínculo" class="h-7 w-auto" src="/logo.svg" />
-        <div class="flex flex-col">
+        <img alt="Vínculo" class="h-7 w-auto dark:hidden" src="/logo.svg" />
+        <img alt="Vínculo" class="h-7 w-auto hidden dark:block" src="/logo-oscuro.svg" />
+        <div class="flex flex-col flex-1">
           <span class="font-headline-sm text-headline-sm text-on-surface leading-none">Vínculo</span>
           <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase mt-0.5">
             PRM Personal
           </span>
         </div>
+        <button
+          type="button"
+          title="Cerrar menú"
+          class="p-1.5 -mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container-high lg:hidden"
+          @click="$emit('cerrar')"
+        >
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
       </div>
 
       <nav class="flex flex-col gap-1">
@@ -43,7 +57,7 @@ const active = defineModel<string>({ default: 'dashboard' });
               ? 'bg-primary-container text-on-primary shadow-sm'
               : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
           "
-          @click.prevent="active = item.path"
+          @click.prevent="active = item.path; $emit('cerrar')"
         >
           <span class="material-symbols-outlined text-lg">{{ item.icon }}</span>
           <span>{{ item.label }}</span>
