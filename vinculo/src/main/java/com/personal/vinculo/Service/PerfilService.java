@@ -12,11 +12,9 @@ import java.util.List;
 @Service
 public class PerfilService {
 
-    private Perfil usuario;
     private JdbcTemplate jdbc;
 
-    public PerfilService(Perfil usuario, JdbcTemplate jdbc) {
-        this.usuario = usuario;
+    public PerfilService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -27,6 +25,7 @@ public class PerfilService {
     }
 
     private Perfil rowPerfil(ResultSet rs, int rowNum) throws SQLException {
+        Perfil usuario = new Perfil();
         usuario.setId(rs.getLong("id"));
         usuario.setNombre(rs.getString("nombre"));
         usuario.setEmail(rs.getString("email"));
@@ -38,10 +37,10 @@ public class PerfilService {
         usuario.setPreferencias(rs.getString("preferencias"));
         usuario.setIntegraciones(rs.getString("integraciones"));
 
-        Timestamp created = rs.getTimestamp("created_at");
+        Timestamp created = rs.getTimestamp("creado_en");
         usuario.setCreadoEn(created != null ? created.toString() : null);
 
-        Timestamp updated = rs.getTimestamp("updated_at");
+        Timestamp updated = rs.getTimestamp("actualizado_en");
         usuario.setActualizadoEn(updated != null ? updated.toString() : null);
 
         return usuario;
