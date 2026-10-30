@@ -8,8 +8,8 @@
   Un gestor de relaciones personales para cuidar tu red de contactos con intención.
 </p>
 
-> **🚧 Versión 0.1: primera versión.**
-> Esta es la primera versión funcional de Vínculo. La base ya está hecha (backend, frontend, base de datos y despliegue con Docker), pero el proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta la [hoja de ruta](#-hoja-de-ruta) para ver lo que viene.
+> **🚀 Versión 1.0.0: primera versión.**
+> Esta es la primera versión completa de Vínculo: backend, frontend, base de datos y despliegue con Docker funcionando de punta a punta. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta la [hoja de ruta](#-hoja-de-ruta) para ver lo que viene.
 
 ---
 
@@ -182,7 +182,7 @@ vinculo/
 
 ## 🗺️ Hoja de ruta
 
-Esta es la **versión 0.1**. Lo siguiente que está previsto:
+Esta es la **versión 1.0.0**. Lo siguiente que está previsto para las próximas versiones:
 
 - [ ] Editar y borrar contactos, notas, círculos, interacciones y recordatorios desde la app.
 - [ ] Buscador global funcional (contactos, notas y círculos).
@@ -195,7 +195,7 @@ Esta es la **versión 0.1**. Lo siguiente que está previsto:
 
 ¿Tienes alguna idea? Abre un *issue*.
 
-## ⚠️ Limitaciones conocidas de la v0.1
+## ⚠️ Limitaciones conocidas de la v1.0.0
 
 - Por ahora solo se pueden **crear** registros. Editar y borrar solo está disponible en el pipeline.
 - La seguridad está abierta (sin login): está pensada para usarse **solo en local**. No la expongas a internet.
