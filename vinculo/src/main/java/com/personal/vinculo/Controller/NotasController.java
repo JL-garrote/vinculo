@@ -30,6 +30,11 @@ public class NotasController {
         return notas.buscarPorID(id);
     }
 
+    @GetMapping("/borrar/{id}")
+    public void borrado(@PathVariable int id) {
+        notas.borrarContacto(id);
+    }
+
     @GetMapping("todas")
     public List<Notas> todas() {
         return notas.sacarTodos();

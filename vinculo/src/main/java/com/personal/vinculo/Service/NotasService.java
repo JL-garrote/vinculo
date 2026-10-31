@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Notas;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,6 @@ public class NotasService {
         this.insert = insert;
     }
 
-    /** Inserta la nota y la devuelve tal como queda en la base de datos */
     public Notas crear(Notas nota) {
         Map<String, Object> valores = new HashMap<>();
         valores.put("contacto_id", nota.getContactoID());
@@ -34,6 +34,16 @@ public class NotasService {
 
         long id = insert.insertar("notas", valores);
         return buscarPorID((int) id).orElseThrow();
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM notas WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Usuario borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
+        }
     }
 
     public List<Notas> sacarTodos() {
