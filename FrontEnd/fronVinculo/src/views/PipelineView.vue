@@ -408,12 +408,13 @@ async function quitar(entrada: PipelineContacto) {
     </p>
 
     <!-- Tablero kanban -->
-    <div v-else class="px-4 sm:px-6 lg:px-8 py-4 overflow-x-auto pb-10 snap-x snap-mandatory sm:snap-none scroll-px-4">
-      <div class="flex gap-4 sm:gap-5 w-max items-start">
+    <!-- Todas las etapas a la vista, sin scroll lateral: en pantallas grandes las 5 en fila, en las pequeñas se reparten en filas -->
+    <div v-else class="px-4 sm:px-6 lg:px-8 py-4 pb-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 items-start">
         <div
           v-for="col in columnas"
           :key="col.key"
-          class="w-[85vw] max-w-80 sm:w-80 flex-shrink-0 snap-start flex flex-col gap-3 rounded-xl transition-colors"
+          class="min-w-0 flex flex-col gap-3 rounded-xl transition-colors"
           :class="{ 'bg-primary-fixed/40 outline-2 outline-dashed outline-primary/30': dropTarget === col.key }"
           @dragover.prevent="dropTarget = col.key"
           @dragleave.self="dropTarget = null"
