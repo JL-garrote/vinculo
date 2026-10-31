@@ -55,7 +55,7 @@ const diasEnEtapa = computed(() => {
 
     <!-- Siguiente acción -->
     <div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col gap-1.5">
-      <div class="flex items-center justify-between gap-2 font-label-sm text-label-sm">
+      <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 font-label-sm text-label-sm">
         <span class="text-on-surface-variant flex items-center gap-1">
           <span class="material-symbols-outlined text-xs text-primary">flag</span> Siguiente acción
         </span>
@@ -74,7 +74,7 @@ const diasEnEtapa = computed(() => {
     </div>
 
     <!-- Pie -->
-    <div class="flex items-center justify-between text-on-surface-variant pt-1">
+    <div class="flex flex-wrap items-center justify-between gap-2 text-on-surface-variant pt-1">
       <span
         v-if="circulo"
         class="px-2 py-0.5 rounded-full font-label-sm text-label-sm"
