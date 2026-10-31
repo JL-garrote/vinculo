@@ -40,6 +40,11 @@ public class ContactoController {
         return contacto.contadorDeContactos();
     }
 
+    @GetMapping("/borrar/{id}")
+    public void borrado(@PathVariable int id) {
+        contacto.borrarContacto(id);
+    }
+
     public record PeticionContacto(String tratamiento, String nombre, String apellidos, String fotoURI,
                                    String empresa, String cargo, String ciudad, String pais, String email,
                                    String telefono, String linkedinURI, String canalPreferido, Long circuloID,

@@ -1,13 +1,13 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Contactos;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,6 @@ public class ContactoService {
         this.insert = insert;
     }
 
-    /** Inserta el contacto y lo devuelve tal como queda en la base de datos */
     public Contactos crear(Contactos c) {
         Map<String, Object> valores = new HashMap<>();
         valores.put("tratamiento", c.getTratamiento());
@@ -57,6 +56,16 @@ public class ContactoService {
 
         long id = insert.insertar("contactos", valores);
         return buscarPorID(id).orElseThrow();
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM contactos WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Usuario borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
+        }
     }
 
     public List<Contactos> sacarTodos() {
