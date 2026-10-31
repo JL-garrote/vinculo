@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Perfil;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +20,13 @@ public class PerfilService {
     }
 
     public List<Perfil> sacarUsuario() {
-        String sql = "SELECT * FROM perfil";
-        List<Perfil> lista = jdbc.query(sql,this::rowPerfil);
+        List<Perfil> lista = null;
+        try {
+            String sql = "SELECT * FROM perfil";
+            lista = jdbc.query(sql, this::rowPerfil);
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
         return lista;
     }
 

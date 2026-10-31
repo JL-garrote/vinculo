@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Circulos;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,6 @@ public class CirculoService {
         this.insert = insert;
     }
 
-    /** Inserta el círculo (al final del orden si no se indica) y lo devuelve */
     public Circulos crear(Circulos circulo) {
         int orden = circulo.getOrden() > 0
                 ? circulo.getOrden()
@@ -38,15 +38,35 @@ public class CirculoService {
         return buscarPorID((int) id).orElseThrow();
     }
 
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM circulos WHERE id = ?";
+            jdbcTemplate.update(sql, id);
+            System.out.println("[Usuario borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
+        }
+    }
+
     public List<Circulos> sacarTodos() {
-        String sql = "SELECT * FROM circulos";
-        List<Circulos> lista = jdbcTemplate.query(sql,this::rowCirculos);
+        List<Circulos> lista = null;
+        try {
+            String sql = "SELECT * FROM circulos";
+            lista = jdbcTemplate.query(sql, this::rowCirculos);
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
         return lista;
     }
 
     public Optional<Circulos> buscarPorID(int id) {
-        String sql = "SELECT * FROM circulos WHERE id = ?";
-        List<Circulos> lista = jdbcTemplate.query(sql,this::rowCirculos,id);
+        List<Circulos> lista = null;
+        try {
+            String sql = "SELECT * FROM circulos WHERE id = ?";
+            lista = jdbcTemplate.query(sql, this::rowCirculos, id);
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
         return lista.stream().findFirst();
     }
 
