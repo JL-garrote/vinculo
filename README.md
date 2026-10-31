@@ -8,8 +8,8 @@
   Un gestor de relaciones personales para cuidar tu red de contactos con intención.
 </p>
 
-> **🚀 Versión 1.0.0: primera versión.**
-> Esta es la primera versión completa de Vínculo: backend, frontend, base de datos y despliegue con Docker funcionando de punta a punta. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta la [hoja de ruta](#-hoja-de-ruta) para ver lo que viene.
+> **🚀 Versión 1.1.0: ya se puede borrar.**
+> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade el borrado de contactos, círculos y notas desde la app. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
 
 ---
 
@@ -38,12 +38,14 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - Directorio con búsqueda y filtros por círculo, estado del próximo paso y ciudad.
 - Ordenación y paginación.
 - Alta de nuevos contactos y creación de **círculos** (grupos con color y cadencia propia).
+- Borrado de círculos: sus contactos no se pierden, se quedan sin círculo.
 
 ### Ficha de contacto
 - Vista 360° de cada persona: datos de contacto, contexto personal y presentaciones (quién te lo presentó y a quién ha presentado él).
 - Registro de **interacciones** (café, llamada, reunión, email…), con borradores.
 - **Notas** (generales, oportunidades, preferencias y recursos) y **recordatorios** con recurrencia.
 - Historial completo de la relación.
+- Borrado de notas y del propio contacto (con todo su historial). Siempre se pide confirmación antes de borrar.
 
 ### Pipeline relacional
 - Tablero kanban con cinco etapas: *Identificado → Primer contacto → Reunión → Seguimiento → Aliado*.
@@ -135,13 +137,16 @@ Todas las rutas empiezan por `/api/controller`.
 | | `GET` | `/contacto/porID/{id}` | Un contacto |
 | | `GET` | `/contacto/contador` | Número de contactos |
 | | `POST` | `/contacto` | Crear contacto |
+| | `GET` | `/contacto/borrar/{id}` | Borrar contacto (y en cascada sus notas, interacciones, recordatorios y entradas del pipeline) |
 | Círculos | `GET` | `/circulo/todos` | Lista de círculos |
 | | `GET` | `/circulo/porID/{id}` | Un círculo |
 | | `POST` | `/circulo` | Crear círculo |
+| | `GET` | `/circulo/borrar/{id}` | Borrar círculo (sus contactos se quedan sin círculo) |
 | Notas | `GET` | `/notas/todas` | Lista de notas |
 | | `GET` | `/notas/id/{id}` | Una nota |
 | | `GET` | `/notas/contadorNotas` | Número de notas |
 | | `POST` | `/notas` | Crear nota |
+| | `GET` | `/notas/borrar/{id}` | Borrar nota |
 | Interacciones | `GET` | `/interaccion/todas` | Todas las interacciones |
 | | `GET` | `/interaccion/contacto/{id}` | Historial de un contacto |
 | | `POST` | `/interaccion` | Registrar interacción |
@@ -180,11 +185,23 @@ vinculo/
         └── views/            # Dashboard, Contactos, Ficha y Pipeline
 ```
 
+## 🆕 Novedades
+
+### v1.1.0
+- Borrado de **contactos**, **círculos** y **notas** desde la app, con confirmación antes de borrar.
+- Al borrar un contacto se eliminan también sus notas, interacciones, recordatorios y entradas del pipeline. Al borrar un círculo, sus contactos se conservan sin círculo.
+- Nuevos endpoints de borrado en la API.
+
+### v1.0.0
+- Primera versión estable: dashboard, contactos, ficha 360°, pipeline relacional, modo oscuro, diseño adaptable y despliegue con Docker.
+
 ## 🗺️ Hoja de ruta
 
-Esta es la **versión 1.0.0**. Lo siguiente que está previsto para las próximas versiones:
+Esta es la **versión 1.1.0**. Lo siguiente que está previsto para las próximas versiones:
 
-- [ ] Editar y borrar contactos, notas, círculos, interacciones y recordatorios desde la app.
+- [x] Borrar contactos, círculos y notas desde la app *(v1.1.0)*.
+- [ ] Editar contactos, notas, círculos, interacciones y recordatorios desde la app.
+- [ ] Borrar interacciones y recordatorios.
 - [ ] Buscador global funcional (contactos, notas y círculos).
 - [ ] Pantalla de ajustes y edición del perfil.
 - [ ] Inicio de sesión para proteger los datos.
@@ -195,9 +212,10 @@ Esta es la **versión 1.0.0**. Lo siguiente que está previsto para las próxima
 
 ¿Tienes alguna idea? Abre un *issue*.
 
-## ⚠️ Limitaciones conocidas de la v1.0.0
+## ⚠️ Limitaciones conocidas de la v1.1.0
 
-- Por ahora solo se pueden **crear** registros. Editar y borrar solo está disponible en el pipeline.
+- Todavía no se pueden **editar** registros (salvo en el pipeline), ni borrar interacciones o recordatorios.
+- Los endpoints de borrado responden `200` aunque el registro no exista, así que la app no puede avisar si un borrado no ha tenido efecto.
 - La seguridad está abierta (sin login): está pensada para usarse **solo en local**. No la expongas a internet.
 - Algunos botones del diseño (sincronizar calendario, importar, ajustes) todavía no tienen funcionalidad.
 
