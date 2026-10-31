@@ -2,12 +2,14 @@
 import { computed, ref, watch } from 'vue';
 import ContactRow from '@/components/contactos/ContactRow.vue';
 import NuevoCirculoDialog from '@/components/formularios/NuevoCirculoDialog.vue';
-import { store } from '@/api/store';
+import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
+import { borrarCirculo, store } from '@/api/store';
 import { estadoProximoPaso, lista, nombreCompleto, parseFecha, type EstadoProximoPaso } from '@/api/format';
 
 defineEmits<{ abrir: [id: number]; nuevoContacto: [] }>();
 
 const creandoCirculo = ref(false);
+const borrandoCirculo = ref(false);
 
 interface Metric {
   label: string;
@@ -94,6 +96,15 @@ const ciudades = computed(() =>
 
 // Filtros
 const activeCircle = ref(0);
+const circuloActivo = computed(() => store.circulos.find((c) => c.id === activeCircle.value));
+const contactosDelCirculoActivo = computed(
+  () => store.contactos.filter((c) => c.circuloID === activeCircle.value).length,
+);
+
+function circuloBorrado() {
+  borrandoCirculo.value = false;
+  activeCircle.value = 0;
+}
 const search = ref('');
 const estadoFilter = ref<'all' | EstadoProximoPaso>('all');
 const ciudad = ref('all');
@@ -240,6 +251,14 @@ const selectClass =
           @click="creandoCirculo = true"
         >
           <span class="material-symbols-outlined text-base">add</span> Nuevo círculo
+        </button>
+        <button
+          v-if="circuloActivo"
+          type="button"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-1 shrink-0 text-error hover:bg-error-container transition-colors"
+          @click="borrandoCirculo = true"
+        >
+          <span class="material-symbols-outlined text-base">delete</span> Eliminar círculo
         </button>
       </div>
 
@@ -414,6 +433,18 @@ const selectClass =
       v-if="creandoCirculo"
       @creado="(c) => { creandoCirculo = false; activeCircle = c.id; }"
       @cerrar="creandoCirculo = false"
+    />
+    <ConfirmarBorradoDialog
+      v-if="borrandoCirculo && circuloActivo"
+      titulo="Eliminar círculo"
+      :mensaje="`Se borrará el círculo «${circuloActivo.nombre}». ${
+        contactosDelCirculoActivo
+          ? `Sus ${contactosDelCirculoActivo} contactos no se borran: se quedan sin círculo.`
+          : 'No tiene contactos.'
+      }`"
+      :borrar="() => borrarCirculo(circuloActivo!.id)"
+      @borrado="circuloBorrado"
+      @cerrar="borrandoCirculo = false"
     />
   </div>
 </template>

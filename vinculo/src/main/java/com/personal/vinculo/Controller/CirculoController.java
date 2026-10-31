@@ -38,6 +38,11 @@ public class CirculoController {
     public record PeticionCirculo(String nombre, String color, Integer cadenciaDefectoDias, Integer orden) {
     }
 
+    @GetMapping("/borrar/{id}")
+    public void borrado(@PathVariable int id) {
+        service.borrarContacto(id);
+    }
+
     @PostMapping
     public ResponseEntity<Circulos> crear(@RequestBody PeticionCirculo p) {
         Validar.obligatorio(p.nombre(), "nombre");

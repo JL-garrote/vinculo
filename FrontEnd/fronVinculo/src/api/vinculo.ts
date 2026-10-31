@@ -66,15 +66,19 @@ export const api = {
   contacto: (id: number) => get<Contacto | null>(`/contacto/porID/${id}`),
   contadorContactos: () => get<number>('/contacto/contador'),
   crearContacto: (datos: PeticionContacto) => send<Contacto>('POST', '/contacto', datos),
+  // El backend borra con GET /borrar/{id}; la base de datos borra en cascada sus notas, interacciones, etc.
+  borrarContacto: (id: number) => get<null>(`/contacto/borrar/${id}`),
 
   circulos: async () => (await get<Circulo[] | null>('/circulo/todos')) ?? [],
   circulo: (id: number) => get<Circulo | null>(`/circulo/porID/${id}`),
   crearCirculo: (datos: PeticionCirculo) => send<Circulo>('POST', '/circulo', datos),
+  borrarCirculo: (id: number) => get<null>(`/circulo/borrar/${id}`),
 
   notas: async () => (await get<Nota[] | null>('/notas/todas')) ?? [],
   nota: (id: number) => get<Nota | null>(`/notas/id/${id}`),
   contadorNotas: () => get<number>('/notas/contadorNotas'),
   crearNota: (datos: PeticionNota) => send<Nota>('POST', '/notas', datos),
+  borrarNota: (id: number) => get<null>(`/notas/borrar/${id}`),
 
   interaccionesDe: async (contactoId: number) =>
     (await get<Interaccion[] | null>(`/interaccion/contacto/${contactoId}`)) ?? [],
