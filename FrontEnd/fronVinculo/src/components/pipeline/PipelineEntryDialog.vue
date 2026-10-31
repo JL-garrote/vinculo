@@ -55,7 +55,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-inverse-surface/40" @click.self="emit('cerrar')">
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim" @click.self="emit('cerrar')">
     <form
       class="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl p-6 flex flex-col gap-5"
       @submit.prevent="guardar"
@@ -99,7 +99,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
       </div>
 
       <!-- Etapa y prioridad -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label class="flex flex-col gap-1.5">
           <span :class="etiqueta">Etapa</span>
           <select v-model="etapa" :class="campo">

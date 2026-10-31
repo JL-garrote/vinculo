@@ -180,32 +180,32 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
 </script>
 
 <template>
-  <div v-if="!contacto" class="px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
+  <div v-if="!contacto" class="px-4 sm:px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
     Todavía no hay contactos. Añade uno para ver su ficha.
   </div>
 
-  <div v-else class="relative w-full px-8 pt-8 pb-10">
+  <div v-else class="relative w-full px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-10 overflow-x-clip">
     <!-- Acentos de fondo -->
     <div class="absolute -top-12 -left-12 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute top-20 right-1/4 w-80 h-80 bg-secondary-container/20 rounded-full blur-3xl pointer-events-none"></div>
 
     <!-- Selector de contacto -->
-    <div class="relative flex items-center justify-end gap-2 mb-4">
+    <div class="relative flex flex-wrap items-center justify-end gap-2 mb-4">
       <span class="font-label-sm text-label-sm text-on-surface-variant">Ver ficha de:</span>
       <select
         v-model="idSeleccionado"
-        class="bg-surface-container-lowest text-on-surface font-label-md text-label-md py-1.5 px-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+        class="max-w-full min-w-0 bg-surface-container-lowest text-on-surface font-label-md text-label-md py-1.5 px-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
       >
         <option v-for="c in contactosOrdenados" :key="c.id" :value="c.id">{{ nombreCompleto(c) }}</option>
       </select>
     </div>
 
     <!-- Cabecera del contacto -->
-    <div class="relative bg-surface-container-lowest rounded-xl shadow-sm p-8 flex flex-col gap-6">
+    <div class="relative bg-surface-container-lowest rounded-xl shadow-sm p-5 sm:p-8 flex flex-col gap-6">
       <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div class="relative">
-            <AvatarContacto :nombre="nombre" :src="contacto.fotoURI" size="w-28 h-28 text-headline-md shadow-md" />
+            <AvatarContacto :nombre="nombre" :src="contacto.fotoURI" size="w-20 h-20 sm:w-28 sm:h-28 text-headline-md shadow-md" />
             <span
               v-if="contacto.prioritario"
               class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm"
@@ -215,7 +215,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             </span>
           </div>
 
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2 min-w-0">
             <div class="flex flex-wrap items-center gap-2">
               <h1 class="font-headline-md text-headline-md text-on-surface">{{ nombre }}</h1>
               <span
@@ -255,7 +255,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm"
               >
                 <span class="material-symbols-outlined text-sm text-primary">mail</span>
-                <span>{{ contacto.email }}</span>
+                <span class="truncate">{{ contacto.email }}</span>
               </a>
               <a
                 v-if="contacto.telefono"
@@ -287,7 +287,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
           </div>
         </div>
 
-        <div class="flex items-center gap-2.5 self-start lg:self-center">
+        <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
           <button
             type="button"
             class="flex items-center gap-2 px-4 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-primary transition-all shadow-sm"
@@ -323,7 +323,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             <p class="font-body-sm text-body-sm text-on-surface-variant">{{ estado.titulo }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end">
+        <div class="flex flex-wrap items-center gap-4 sm:gap-8 w-full md:w-auto justify-between md:justify-end">
           <div class="flex flex-col text-left md:text-right">
             <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Cadencia Deseada</span>
             <span class="font-label-lg text-label-lg text-on-surface mt-0.5 flex items-center gap-1.5 md:justify-end">
@@ -347,11 +347,11 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
     </div>
 
     <!-- Vista 360 -->
-    <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+    <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-6 sm:mt-8">
       <!-- Columna izquierda -->
       <div class="lg:col-span-5 flex flex-col gap-6">
         <!-- Contexto personal -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-5">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-5">
           <div class="flex items-center gap-2.5">
             <span class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
               sentiment_satisfied
@@ -383,7 +383,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
         </div>
 
         <!-- Notas -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span
@@ -442,10 +442,10 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
         </div>
 
         <!-- Recordatorios -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="p-1.5 rounded-lg bg-primary-fixed text-primary-container material-symbols-outlined text-lg">alarm</span>
+              <span class="p-1.5 rounded-lg bg-primary-fixed text-on-primary-fixed-variant material-symbols-outlined text-lg">alarm</span>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Recordatorios</h2>
               <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                 {{ recordatoriosPendientes.length }} pendientes
@@ -487,7 +487,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
         </div>
 
         <!-- Conexiones -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
           <div class="flex items-center gap-2">
             <span class="p-1.5 rounded-lg bg-surface-container text-secondary material-symbols-outlined text-lg">hub</span>
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Conexiones &amp; Intereses</h2>
@@ -549,7 +549,7 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
         <InteractionLogger ref="logger" :guardar="guardarInteraccion" />
 
         <!-- Historial -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
           <div class="flex items-center gap-2.5">
             <span class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
               history_toggle_off

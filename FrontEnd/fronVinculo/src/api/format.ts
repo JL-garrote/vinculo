@@ -101,7 +101,7 @@ export const canales: Record<CanalPreferido, { label: string; icon: string }> = 
 export const tiposNota: Record<TipoNota, { label: string; icon: string; clase: string }> = {
   general: { label: 'General', icon: 'sticky_note_2', clase: 'bg-surface-container text-on-surface-variant' },
   oportunidad: { label: 'Oportunidad', icon: 'lightbulb', clase: 'bg-tertiary-fixed text-tertiary-container' },
-  preferencia: { label: 'Preferencia', icon: 'tune', clase: 'bg-primary-fixed text-primary-container' },
+  preferencia: { label: 'Preferencia', icon: 'tune', clase: 'bg-primary-fixed text-on-primary-fixed-variant' },
   recurso: { label: 'Recurso', icon: 'auto_stories', clase: 'bg-secondary/10 text-secondary' },
 };
 

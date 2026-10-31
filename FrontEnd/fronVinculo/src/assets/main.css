@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* dark: se activa con la clase .dark en <html> (ver api/tema.ts) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Colores */
   --color-primary: #2a14b4;
@@ -53,6 +56,7 @@
   --color-inverse-on-surface: #eaf1ff;
   --color-outline: #777586;
   --color-outline-variant: #c7c4d7;
+  --color-scrim: rgb(11 28 48 / 0.4);
 
   /* Espaciado */
   --spacing-space-xs: 0.25rem;
@@ -122,11 +126,73 @@
   --radius-xl: 0.75rem;
 }
 
+/* Modo oscuro: mismos nombres de token, otros valores */
+:root.dark {
+  color-scheme: dark;
+
+  --color-primary: #8c86ff;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #5a51e0;
+  --color-on-primary-container: #e3dfff;
+  --color-primary-fixed: #2b2672;
+  --color-primary-fixed-dim: #3b3596;
+  --color-on-primary-fixed: #e3dfff;
+  --color-on-primary-fixed-variant: #c3c0ff;
+  --color-inverse-primary: #4338ca;
+
+  --color-secondary: #4fd8c8;
+  --color-on-secondary: #00332e;
+  --color-secondary-container: #00504a;
+  --color-on-secondary-container: #9ff5ea;
+  --color-secondary-fixed: #00433d;
+  --color-secondary-fixed-dim: #005a52;
+  --color-on-secondary-fixed: #a5f8ec;
+  --color-on-secondary-fixed-variant: #6bd8cb;
+
+  --color-tertiary: #ffb77d;
+  --color-on-tertiary: #4d2600;
+  --color-tertiary-container: #f2a25e;
+  --color-on-tertiary-container: #ffc796;
+  --color-tertiary-fixed: #4a2700;
+  --color-tertiary-fixed-dim: #6e3900;
+  --color-on-tertiary-fixed: #ffdcc3;
+  --color-on-tertiary-fixed-variant: #ffb77d;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #8c1d18;
+  --color-on-error-container: #ffdad6;
+
+  --color-background: #0f1220;
+  --color-on-background: #e2e5f5;
+  --color-surface: #0f1220;
+  --color-surface-bright: #34394f;
+  --color-surface-dim: #0f1220;
+  --color-surface-tint: #8c86ff;
+  --color-surface-variant: #34394f;
+  --color-surface-container-lowest: #181b2d;
+  --color-surface-container-low: #1e2236;
+  --color-surface-container: #24283d;
+  --color-surface-container-high: #2c3047;
+  --color-surface-container-highest: #363b53;
+  --color-on-surface: #e2e5f5;
+  --color-on-surface-variant: #b7b9cc;
+  --color-inverse-surface: #e2e5f5;
+  --color-inverse-on-surface: #1e2133;
+  --color-outline: #8a8ca0;
+  --color-outline-variant: #43465a;
+  --color-scrim: rgb(0 0 0 / 0.6);
+}
+
 @layer base {
   html,
   body {
     margin: 0;
     padding: 0;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 
   body {

@@ -145,11 +145,11 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
 </script>
 
 <template>
-  <div class="px-8 py-8 flex flex-col gap-8 max-w-[1600px] mx-auto w-full">
+  <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 max-w-[1600px] mx-auto w-full">
     <!-- Bienvenida -->
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div class="flex flex-col gap-1">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <span
             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm"
             :class="vencidos.length ? 'bg-error-container text-on-error-container' : 'bg-secondary/10 text-secondary'"
@@ -162,7 +162,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           </span>
           <span class="text-on-surface-variant font-label-sm text-label-sm first-letter:uppercase">{{ fechaHoy }}</span>
         </div>
-        <h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">
+        <h1 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-lg md:font-headline-lg text-on-surface tracking-tight">
           ¡{{ saludo }}{{ nombrePerfil ? `, ${nombrePerfil}` : '' }}!
         </h1>
         <p class="text-body-md font-body-md text-on-surface-variant">
@@ -171,7 +171,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           radar.
         </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <button
           type="button"
           class="flex items-center gap-2 px-3.5 py-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg text-label-lg font-label-lg transition-all shadow-sm"
@@ -206,7 +206,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           </span>
         </div>
       </div>
-      <div v-if="proximos.length" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div v-if="proximos.length" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         <AttentionCard v-for="contacto in proximos" :key="contacto.id" :contacto="contacto" @abrir="$emit('abrir', $event)" />
       </div>
       <p
@@ -229,7 +229,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           <span class="font-label-sm text-label-sm text-on-surface-variant">{{ store.notas.length }} en total</span>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
           <p v-if="!actividad.length" class="text-center font-body-sm text-body-sm text-on-surface-variant">
             Todavía no hay notas registradas.
           </p>
@@ -316,7 +316,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           </div>
         </div>
 
-        <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+        <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
           <div class="flex items-center justify-between p-4 rounded-xl bg-surface-container-low gap-4">
             <div class="flex flex-col">
               <span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">

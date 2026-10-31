@@ -5,7 +5,7 @@ const emit = defineEmits<{ cerrar: [] }>();
 
 <template>
   <div
-    class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-inverse-surface/40"
+    class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim"
     @click.self="emit('cerrar')"
     @keydown.esc="emit('cerrar')"
   >

@@ -238,7 +238,7 @@ async function quitar(entrada: PipelineContacto) {
 <template>
   <div class="flex flex-col w-full">
     <!-- Cabecera y KPIs -->
-    <div class="px-8 py-6 flex flex-col gap-6 bg-surface-container-lowest shadow-sm">
+    <div class="px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 bg-surface-container-lowest shadow-sm">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase">
@@ -259,7 +259,7 @@ async function quitar(entrada: PipelineContacto) {
               class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md"
             >
               <span class="material-symbols-outlined text-base text-primary">target</span>
-              <span>Objetivo: {{ pipeline.objetivo }}</span>
+              <span class="min-w-0">Objetivo: {{ pipeline.objetivo }}</span>
             </span>
           </div>
         </div>
@@ -274,7 +274,7 @@ async function quitar(entrada: PipelineContacto) {
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 pt-2">
         <div
           v-for="metric in metrics"
           :key="metric.label"
@@ -333,9 +333,9 @@ async function quitar(entrada: PipelineContacto) {
     </div>
 
     <!-- Barra de filtros -->
-    <div class="px-8 py-3 bg-surface flex flex-wrap items-center justify-between gap-4">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="relative w-64">
+    <div class="px-4 sm:px-6 lg:px-8 py-3 bg-surface flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+        <div class="relative w-full sm:w-64">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">
             search
           </span>
@@ -393,27 +393,27 @@ async function quitar(entrada: PipelineContacto) {
     </div>
 
     <!-- Estados -->
-    <div v-if="error" class="mx-8 mt-2 p-4 rounded-xl bg-error-container text-on-error-container flex items-center justify-between gap-4">
+    <div v-if="error" class="mx-4 sm:mx-6 lg:mx-8 mt-2 p-4 rounded-xl bg-error-container text-on-error-container flex items-center justify-between gap-4">
       <span class="font-body-sm text-body-sm">No se pudo cargar el pipeline: {{ error }}</span>
       <button type="button" class="px-3 py-1.5 rounded-lg bg-error text-on-error font-label-md text-label-md" @click="cargarPipelines">
         Reintentar
       </button>
     </div>
-    <div v-else-if="cargando" class="px-8 py-16 flex items-center justify-center gap-3 text-on-surface-variant">
+    <div v-else-if="cargando" class="px-4 sm:px-8 py-16 flex items-center justify-center gap-3 text-on-surface-variant">
       <span class="material-symbols-outlined animate-spin">progress_activity</span>
       <span class="font-body-md text-body-md">Cargando pipeline…</span>
     </div>
-    <p v-else-if="!pipeline" class="px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
+    <p v-else-if="!pipeline" class="px-4 sm:px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
       No hay ningún pipeline creado en la base de datos.
     </p>
 
     <!-- Tablero kanban -->
-    <div v-else class="px-8 py-4 overflow-x-auto pb-10">
-      <div class="flex gap-5 min-w-[1440px] items-start">
+    <div v-else class="px-4 sm:px-6 lg:px-8 py-4 overflow-x-auto pb-10 snap-x snap-mandatory sm:snap-none scroll-px-4">
+      <div class="flex gap-4 sm:gap-5 w-max items-start">
         <div
           v-for="col in columnas"
           :key="col.key"
-          class="w-80 flex-shrink-0 flex flex-col gap-3 rounded-xl transition-colors"
+          class="w-[85vw] max-w-80 sm:w-80 flex-shrink-0 snap-start flex flex-col gap-3 rounded-xl transition-colors"
           :class="{ 'bg-primary-fixed/40 outline-2 outline-dashed outline-primary/30': dropTarget === col.key }"
           @dragover.prevent="dropTarget = col.key"
           @dragleave.self="dropTarget = null"
@@ -457,7 +457,7 @@ async function quitar(entrada: PipelineContacto) {
     <!-- Sugerencia -->
     <div
       v-if="pipeline && vencidas.length"
-      class="mx-8 mb-8 p-5 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col md:flex-row items-center justify-between gap-4"
+      class="mx-4 sm:mx-6 lg:mx-8 mb-8 p-5 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col md:flex-row items-center justify-between gap-4"
     >
       <div class="flex items-center gap-4">
         <div class="w-10 h-10 shrink-0 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
@@ -483,7 +483,7 @@ async function quitar(entrada: PipelineContacto) {
     <!-- Aviso flotante -->
     <div
       v-if="aviso"
-      class="fixed bottom-6 right-6 z-[70] px-4 py-3 rounded-xl bg-inverse-surface text-inverse-on-surface font-body-sm text-body-sm shadow-lg"
+      class="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-[70] px-4 py-3 rounded-xl bg-inverse-surface text-inverse-on-surface font-body-sm text-body-sm shadow-lg"
     >
       {{ aviso }}
     </div>
