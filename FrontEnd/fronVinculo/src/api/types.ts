@@ -128,6 +128,9 @@ export interface PeticionContacto {
   presentadoPorID?: number | null;
   proximoPaso?: string | null;
   proximoPasoFecha?: string | null;
+  origen?: OrigenContacto;
+  /** Identificador en la fuente de origen; el backend no admite dos iguales para el mismo origen */
+  idExterno?: string | null;
 }
 
 export interface PeticionNota {
