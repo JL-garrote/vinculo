@@ -8,8 +8,8 @@
   Un gestor de relaciones personales para cuidar tu red de contactos con intención.
 </p>
 
-> **🚀 Versión 1.1.0: ya se puede borrar.**
-> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade el borrado de contactos, círculos y notas desde la app. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
+> **🚀 Versión 1.2.0: importa tus contactos.**
+> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade la importación de contactos desde LinkedIn, Google Contacts o cualquier hoja de cálculo. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
 
 ---
 
@@ -39,6 +39,7 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - Ordenación y paginación.
 - Alta de nuevos contactos y creación de **círculos** (grupos con color y cadencia propia).
 - Borrado de círculos: sus contactos no se pierden, se quedan sin círculo.
+- **Importación de contactos** desde LinkedIn, Google Contacts o un CSV/Excel propio (ver [cómo importar](#-importar-contactos)).
 
 ### Ficha de contacto
 - Vista 360° de cada persona: datos de contacto, contexto personal y presentaciones (quién te lo presentó y a quién ha presentado él).
@@ -56,6 +57,21 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - 🌙 **Modo oscuro**, que sigue al sistema por defecto y recuerda tu elección.
 - 📱 **Diseño adaptable** a móvil, tablet y escritorio.
 - 💻 **Instalable como app de escritorio** desde Edge o Chrome (PWA), con su propio icono.
+
+## 📥 Importar contactos
+
+En **Contactos → Importar (Google / LinkedIn)** puedes traer tu red de golpe a partir de un archivo `.csv`:
+
+| Fuente | Cómo conseguir el archivo |
+|---|---|
+| **LinkedIn** | *Yo → Configuración y privacidad → Privacidad de datos → Obtener una copia de tus datos*, marca solo **Contactos**. Del ZIP que te llega por email, sube `Connections.csv`. |
+| **Google** | En [contacts.google.com](https://contacts.google.com) pulsa **Exportar → Google CSV**. |
+| **CSV / Excel** | Una hoja con cabecera. Solo es obligatoria la columna `Nombre`. También se reconocen `Apellidos`, `Email`, `Teléfono`, `Empresa`, `Cargo`, `Ciudad`, `País`, `LinkedIn` y `Cumpleaños` (AAAA-MM-DD). Guárdala como *CSV UTF-8*. |
+
+- El archivo se lee **en tu navegador**: no se guarda nada hasta que confirmas.
+- Antes de importar ves la lista completa, puedes desmarcar contactos y asignarlos todos a un círculo.
+- Los contactos que parecen estar ya en Vínculo (mismo email, perfil de LinkedIn o nombre) aparecen como **"Ya existe"** y sin marcar.
+- Repetir una importación es seguro: cada contacto se guarda con su origen y un identificador (perfil de LinkedIn o email), y los repetidos se saltan.
 
 ## 🛠️ Tecnologías
 
@@ -187,6 +203,12 @@ vinculo/
 
 ## 🆕 Novedades
 
+### v1.2.0
+- **Importación de contactos** desde LinkedIn (`Connections.csv`), Google Contacts (Google CSV) o un CSV/Excel propio.
+- Vista previa antes de importar, detección de duplicados, asignación a un círculo y resumen final con los errores.
+- Desde LinkedIn se guarda la fecha en que conectasteis; desde Google, el teléfono y el cumpleaños.
+- Se hace todo desde el frontend, usando la API existente: no hay cambios en el backend ni en la base de datos.
+
 ### v1.1.0
 - Borrado de **contactos**, **círculos** y **notas** desde la app, con confirmación antes de borrar.
 - Al borrar un contacto se eliminan también sus notas, interacciones, recordatorios y entradas del pipeline. Al borrar un círculo, sus contactos se conservan sin círculo.
@@ -197,27 +219,28 @@ vinculo/
 
 ## 🗺️ Hoja de ruta
 
-Esta es la **versión 1.1.0**. Lo siguiente que está previsto para las próximas versiones:
+Esta es la **versión 1.2.0**. Lo siguiente que está previsto para las próximas versiones:
 
 - [x] Borrar contactos, círculos y notas desde la app *(v1.1.0)*.
+- [x] Importar contactos desde LinkedIn, Google y CSV *(v1.2.0)*.
 - [ ] Editar contactos, notas, círculos, interacciones y recordatorios desde la app.
 - [ ] Borrar interacciones y recordatorios.
 - [ ] Buscador global funcional (contactos, notas y círculos).
 - [ ] Pantalla de ajustes y edición del perfil.
 - [ ] Inicio de sesión para proteger los datos.
 - [ ] Sincronización con el calendario.
-- [ ] Importar contactos desde Google, LinkedIn y CSV.
 - [ ] Notificaciones de recordatorios y cumpleaños.
 - [ ] Tests automáticos en backend y frontend.
 
 ¿Tienes alguna idea? Abre un *issue*.
 
-## ⚠️ Limitaciones conocidas de la v1.1.0
+## ⚠️ Limitaciones conocidas de la v1.2.0
 
 - Todavía no se pueden **editar** registros (salvo en el pipeline), ni borrar interacciones o recordatorios.
 - Los endpoints de borrado responden `200` aunque el registro no exista, así que la app no puede avisar si un borrado no ha tenido efecto.
 - La seguridad está abierta (sin login): está pensada para usarse **solo en local**. No la expongas a internet.
-- Algunos botones del diseño (sincronizar calendario, importar, ajustes) todavía no tienen funcionalidad.
+- La importación solo admite archivos `.csv` (no `.vcf` ni `.xlsx`) y no trae fotos de perfil.
+- Algunos botones del diseño (sincronizar calendario, ajustes) todavía no tienen funcionalidad.
 
 ## 👤 Autor
 
