@@ -7,7 +7,16 @@ import InteractionLogger, {
 import AvatarContacto from '@/components/AvatarContacto.vue';
 import NuevaNotaForm from '@/components/formularios/NuevaNotaForm.vue';
 import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
-import { circuloDe, contactoPorId, notasDe, recargarRecordatorios, store } from '@/api/store';
+import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
+import {
+  borrarContacto,
+  borrarNota,
+  circuloDe,
+  contactoPorId,
+  notasDe,
+  recargarRecordatorios,
+  store,
+} from '@/api/store';
 import { api, mensajeError } from '@/api/vinculo';
 import {
   canales,
@@ -25,7 +34,7 @@ import {
   tiposInteraccion,
   tiposNota,
 } from '@/api/format';
-import type { Contacto, Interaccion, Recordatorio, TipoInteraccion } from '@/api/types';
+import type { Contacto, Interaccion, Nota, Recordatorio, TipoInteraccion } from '@/api/types';
 
 const contactoId = defineModel<number | null>('contactoId', { default: null });
 
@@ -177,6 +186,17 @@ function recordatorioCreado(r: Recordatorio) {
 }
 
 const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
+
+// ---------- Borrados ----------
+
+const borrandoContacto = ref(false);
+const notaABorrar = ref<Nota | null>(null);
+
+function contactoBorrado() {
+  borrandoContacto.value = false;
+  // Sin contacto elegido se muestra el primero del directorio
+  contactoId.value = null;
+}
 </script>
 
 <template>
@@ -304,6 +324,14 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
             <span class="material-symbols-outlined text-base">alarm</span>
             <span>Programar Toque</span>
           </button>
+          <button
+            type="button"
+            class="p-2.5 rounded-lg text-error hover:bg-error-container transition-colors"
+            title="Eliminar contacto"
+            @click="borrandoContacto = true"
+          >
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
         </div>
       </div>
 
@@ -427,12 +455,22 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
                 <span v-if="nota.fijada" class="material-symbols-outlined text-xs text-tertiary-container">push_pin</span>
                 {{ nota.titulo ?? (tiposNota[nota.tipo] ?? tiposNota.general).label }}
               </span>
-              <span
-                class="px-2 py-0.5 rounded font-label-sm text-label-sm"
-                :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
-              >
-                {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
-              </span>
+              <div class="flex items-center gap-1">
+                <span
+                  class="px-2 py-0.5 rounded font-label-sm text-label-sm"
+                  :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
+                >
+                  {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
+                </span>
+                <button
+                  type="button"
+                  class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                  title="Borrar nota"
+                  @click="notaABorrar = nota"
+                >
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </div>
             </div>
             <p class="font-body-sm text-body-sm text-on-surface">{{ nota.contenido }}</p>
             <span class="font-label-sm text-label-sm text-outline">
@@ -622,6 +660,23 @@ const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
       :contacto-id-inicial="contacto.id"
       @creado="recordatorioCreado"
       @cerrar="programando = false"
+    />
+
+    <ConfirmarBorradoDialog
+      v-if="borrandoContacto"
+      titulo="Eliminar contacto"
+      :mensaje="`Se borrará a ${nombre} junto con sus notas, interacciones, recordatorios y su lugar en el pipeline.`"
+      :borrar="() => borrarContacto(contacto!.id)"
+      @borrado="contactoBorrado"
+      @cerrar="borrandoContacto = false"
+    />
+    <ConfirmarBorradoDialog
+      v-if="notaABorrar"
+      titulo="Borrar nota"
+      :mensaje="`Se borrará la nota «${notaABorrar.titulo ?? notaABorrar.contenido.slice(0, 60)}».`"
+      :borrar="() => borrarNota(notaABorrar!.id)"
+      @borrado="notaABorrar = null"
+      @cerrar="notaABorrar = null"
     />
   </div>
 </template>

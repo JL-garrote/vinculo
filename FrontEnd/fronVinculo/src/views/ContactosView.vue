@@ -2,12 +2,16 @@
 import { computed, ref, watch } from 'vue';
 import ContactRow from '@/components/contactos/ContactRow.vue';
 import NuevoCirculoDialog from '@/components/formularios/NuevoCirculoDialog.vue';
-import { store } from '@/api/store';
+import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
+import ImportarContactosDialog from '@/components/formularios/ImportarContactosDialog.vue';
+import { borrarCirculo, store } from '@/api/store';
 import { estadoProximoPaso, lista, nombreCompleto, parseFecha, type EstadoProximoPaso } from '@/api/format';
 
 defineEmits<{ abrir: [id: number]; nuevoContacto: [] }>();
 
 const creandoCirculo = ref(false);
+const borrandoCirculo = ref(false);
+const importando = ref(false);
 
 interface Metric {
   label: string;
@@ -94,6 +98,15 @@ const ciudades = computed(() =>
 
 // Filtros
 const activeCircle = ref(0);
+const circuloActivo = computed(() => store.circulos.find((c) => c.id === activeCircle.value));
+const contactosDelCirculoActivo = computed(
+  () => store.contactos.filter((c) => c.circuloID === activeCircle.value).length,
+);
+
+function circuloBorrado() {
+  borrandoCirculo.value = false;
+  activeCircle.value = 0;
+}
 const search = ref('');
 const estadoFilter = ref<'all' | EstadoProximoPaso>('all');
 const ciudad = ref('all');
@@ -129,6 +142,24 @@ const pageContacts = computed(() =>
 );
 const rangeStart = computed(() => (filteredContacts.value.length ? (page.value - 1) * rowsPerPage.value + 1 : 0));
 const rangeEnd = computed(() => Math.min(page.value * rowsPerPage.value, filteredContacts.value.length));
+
+// Números de página a mostrar: la primera, la última y las vecinas de la actual; null = hueco "…"
+const paginasVisibles = computed<(number | null)[]>(() => {
+  const total = totalPages.value;
+  const actual = page.value;
+  const numeros = [...new Set([1, actual - 1, actual, actual + 1, total])]
+    .filter((n) => n >= 1 && n <= total)
+    .sort((a, b) => a - b);
+  const resultado: (number | null)[] = [];
+  numeros.forEach((n, i) => {
+    const anterior = numeros[i - 1];
+    // Si solo falta una página entre dos números, se muestra en vez de "…"
+    if (anterior !== undefined && n - anterior === 2) resultado.push(anterior + 1);
+    else if (anterior !== undefined && n - anterior > 2) resultado.push(null);
+    resultado.push(n);
+  });
+  return resultado;
+});
 
 watch([activeCircle, search, estadoFilter, ciudad, sortBy, rowsPerPage], () => (page.value = 1));
 
@@ -175,6 +206,7 @@ const selectClass =
         <button
           type="button"
           class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface rounded-lg font-label-lg text-label-lg hover:bg-surface-container transition-all shadow-sm"
+          @click="importando = true"
         >
           <span class="material-symbols-outlined text-lg text-primary">cloud_download</span>
           <span>Importar (Google / LinkedIn)</span>
@@ -240,6 +272,14 @@ const selectClass =
           @click="creandoCirculo = true"
         >
           <span class="material-symbols-outlined text-base">add</span> Nuevo círculo
+        </button>
+        <button
+          v-if="circuloActivo"
+          type="button"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-1 shrink-0 text-error hover:bg-error-container transition-colors"
+          @click="borrandoCirculo = true"
+        >
+          <span class="material-symbols-outlined text-base">delete</span> Eliminar círculo
         </button>
       </div>
 
@@ -353,6 +393,7 @@ const selectClass =
               <option :value="10">10</option>
               <option :value="25">25</option>
               <option :value="50">50</option>
+              <option :value="100">100</option>
             </select>
           </div>
         </div>
@@ -374,21 +415,23 @@ const selectClass =
           >
             <span class="material-symbols-outlined text-lg">chevron_left</span>
           </button>
-          <div class="flex flex-wrap items-center gap-1">
-            <button
-              v-for="n in totalPages"
-              :key="n"
-              type="button"
-              class="w-8 h-8 rounded-lg font-label-md text-label-md flex items-center justify-center transition-colors"
-              :class="
-                n === page
-                  ? 'bg-primary-container text-on-primary font-semibold'
-                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-              "
-              @click="page = n"
-            >
-              {{ n }}
-            </button>
+          <div class="flex items-center gap-1">
+            <template v-for="(n, i) in paginasVisibles" :key="n ?? `hueco-${i}`">
+              <span v-if="n === null" class="w-6 text-center text-on-surface-variant select-none">…</span>
+              <button
+                v-else
+                type="button"
+                class="min-w-8 h-8 px-1.5 rounded-lg font-label-md text-label-md flex items-center justify-center transition-colors"
+                :class="
+                  n === page
+                    ? 'bg-primary-container text-on-primary font-semibold'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                "
+                @click="page = n"
+              >
+                {{ n }}
+              </button>
+            </template>
           </div>
           <button
             type="button"
@@ -415,5 +458,18 @@ const selectClass =
       @creado="(c) => { creandoCirculo = false; activeCircle = c.id; }"
       @cerrar="creandoCirculo = false"
     />
+    <ConfirmarBorradoDialog
+      v-if="borrandoCirculo && circuloActivo"
+      titulo="Eliminar círculo"
+      :mensaje="`Se borrará el círculo «${circuloActivo.nombre}». ${
+        contactosDelCirculoActivo
+          ? `Sus ${contactosDelCirculoActivo} contactos no se borran: se quedan sin círculo.`
+          : 'No tiene contactos.'
+      }`"
+      :borrar="() => borrarCirculo(circuloActivo!.id)"
+      @borrado="circuloBorrado"
+      @cerrar="borrandoCirculo = false"
+    />
+    <ImportarContactosDialog v-if="importando" @cerrar="importando = false" />
   </div>
 </template>
