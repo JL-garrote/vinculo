@@ -7,9 +7,11 @@ export interface NewInteraction {
   type: InteractionType;
   text: string;
   topics: string[];
+  borrador: boolean;
 }
 
-const emit = defineEmits<{ save: [interaction: NewInteraction] }>();
+// El padre guarda la interacción; si la promesa falla se muestra el error aquí
+const props = defineProps<{ guardar: (interaction: NewInteraction) => Promise<void> }>();
 
 const tabs: { type: InteractionType; label: string; icon: string }[] = [
   { type: 'cafe', label: 'Café / Presencial', icon: 'local_cafe' },
@@ -25,7 +27,9 @@ const today = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 's
 const activeType = ref<InteractionType>('cafe');
 const text = ref('');
 const topics = ref<string[]>([]);
-const saved = ref(false);
+const saved = ref<'registro' | 'borrador' | null>(null);
+const saving = ref(false);
+const error = ref<string | null>(null);
 const placeholder = ref('¿De qué hablaron? Menciona temas tratados, recomendaciones o tareas acordadas...');
 const textarea = ref<HTMLTextAreaElement | null>(null);
 
@@ -35,19 +39,26 @@ function toggleTopic(topic: string) {
     : [...topics.value, topic];
 }
 
-function save() {
+async function save(borrador = false) {
+  if (saving.value) return;
   if (!text.value.trim()) {
     placeholder.value = 'Por favor escribe un detalle antes de registrar...';
     textarea.value?.focus();
     return;
   }
-  emit('save', { type: activeType.value, text: text.value.trim(), topics: topics.value });
-  saved.value = true;
-  setTimeout(() => {
+  saving.value = true;
+  error.value = null;
+  try {
+    await props.guardar({ type: activeType.value, text: text.value.trim(), topics: topics.value, borrador });
+    saved.value = borrador ? 'borrador' : 'registro';
     text.value = '';
     topics.value = [];
-    saved.value = false;
-  }, 1500);
+    setTimeout(() => (saved.value = null), 1500);
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'No se pudo guardar';
+  } finally {
+    saving.value = false;
+  }
 }
 
 // Permite al padre llevar el foco al cuadro de texto ("Registrar Interacción")
@@ -60,8 +71,8 @@ defineExpose({ focus });
 </script>
 
 <template>
-  <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-4">
-    <div class="flex items-center justify-between">
+  <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
         <span class="material-symbols-outlined text-primary">add_comment</span>
         <span>Registrar Nueva Interacción</span>
@@ -70,7 +81,7 @@ defineExpose({ focus });
     </div>
 
     <!-- Canal -->
-    <div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
+    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
       <button
         v-for="tab in tabs"
         :key="tab.type"
@@ -118,30 +129,34 @@ defineExpose({ focus });
           </button>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="px-3 py-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors"
+            class="px-3 py-1.5 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors disabled:opacity-50"
+            :disabled="saving"
+            @click="save(true)"
           >
-            Guardar Borrador
+            {{ saved === 'borrador' ? 'Borrador guardado' : 'Guardar Borrador' }}
           </button>
           <button
             type="button"
-            class="px-4 py-1.5 text-on-primary font-label-md text-label-md rounded-lg transition-colors shadow-sm flex items-center gap-1"
-            :class="saved ? 'bg-secondary' : 'bg-primary-container hover:bg-primary'"
-            @click="save"
+            class="px-4 py-1.5 font-label-md text-label-md rounded-lg transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50"
+            :class="saved === 'registro' ? 'bg-secondary text-on-secondary' : 'bg-primary-container hover:bg-primary text-on-primary'"
+            :disabled="saving"
+            @click="save(false)"
           >
-            <template v-if="saved">
+            <template v-if="saved === 'registro'">
               <span class="material-symbols-outlined text-sm">done_all</span>
               <span>Guardado</span>
             </template>
             <template v-else>
-              <span>Guardar Registro</span>
+              <span>{{ saving ? 'Guardando…' : 'Guardar Registro' }}</span>
               <span class="material-symbols-outlined text-sm">check</span>
             </template>
           </button>
         </div>
       </div>
+      <p v-if="error" class="font-body-sm text-body-sm text-error">{{ error }}</p>
     </div>
   </div>
 </template>

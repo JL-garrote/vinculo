@@ -17,4 +17,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // En desarrollo, /api se reenvía al backend de Spring Boot (evita problemas de CORS)
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_TARGET ?? 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
 })

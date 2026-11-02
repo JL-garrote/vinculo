@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" stroke-width="29.4">
+  <!-- Icono de la app: eslabón blanco y verde claro sobre fondo índigo -->
+  <defs>
+    <clipPath id="mitad-superior"><rect width="512" height="256" /></clipPath>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="#4338CA" stroke="none" />
+  <circle cx="216.2" cy="256" r="73.1" stroke="#FFFFFF" />
+  <circle cx="295.8" cy="256" r="73.1" stroke="#5EEAD4" />
+  <circle cx="216.2" cy="256" r="73.1" stroke="#FFFFFF" clip-path="url(#mitad-superior)" />
+</svg>

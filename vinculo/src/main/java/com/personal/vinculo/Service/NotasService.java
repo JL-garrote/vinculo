@@ -1,22 +1,59 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Notas;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class NotasService {
 
     private JdbcTemplate jdbc;
+    private InsertHelper insert;
 
-    public NotasService(JdbcTemplate jdbc) {
+    public NotasService(JdbcTemplate jdbc, InsertHelper insert) {
         this.jdbc = jdbc;
+        this.insert = insert;
+    }
+
+    public Notas crear(Notas nota) {
+        Map<String, Object> valores = new HashMap<>();
+        valores.put("contacto_id", nota.getContactoID());
+        valores.put("tipo", nota.getTipo());
+        valores.put("titulo", nota.getTitulo());
+        valores.put("contenido", nota.getContenido());
+        valores.put("fijada", nota.getFijada());
+
+        long id = insert.insertar("notas", valores);
+        return buscarPorID((int) id).orElseThrow();
+    }
+
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM notas WHERE id = ?";
+            jdbc.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM notas WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Usuario borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
+        }
     }
 
     public List<Notas> sacarTodos() {

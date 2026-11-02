@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124" fill="none" stroke-width="20.5">
+  <!-- Eslabón: el anillo índigo pasa por encima arriba y el verde por encima abajo -->
+  <defs>
+    <clipPath id="mitad-superior"><rect width="180" height="62" /></clipPath>
+  </defs>
+  <circle cx="62" cy="62" r="51" stroke="#4338CA" />
+  <circle cx="117.5" cy="62" r="51" stroke="#0D9488" />
+  <circle cx="62" cy="62" r="51" stroke="#4338CA" clip-path="url(#mitad-superior)" />
+</svg>

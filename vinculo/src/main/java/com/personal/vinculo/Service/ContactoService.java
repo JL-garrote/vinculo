@@ -1,23 +1,81 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Contactos;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class ContactoService {
 
     private JdbcTemplate jdbc;
+    private InsertHelper insert;
 
-    public ContactoService(JdbcTemplate jdbc) {
+    public ContactoService(JdbcTemplate jdbc, InsertHelper insert) {
         this.jdbc = jdbc;
+        this.insert = insert;
+    }
+
+    public Contactos crear(Contactos c) {
+        Map<String, Object> valores = new HashMap<>();
+        valores.put("tratamiento", c.getTratamiento());
+        valores.put("nombre", c.getNombre());
+        valores.put("apellidos", c.getApellidos());
+        valores.put("foto_url", c.getFotoURI());
+        valores.put("empresa", c.getEmpresa());
+        valores.put("cargo", c.getCargo());
+        valores.put("ciudad", c.getCiudad());
+        valores.put("pais", c.getPais());
+        valores.put("email", c.getEmail());
+        valores.put("telefono", c.getTelefono());
+        valores.put("linkedin_url", c.getLinkedinURI());
+        valores.put("canal_preferido", c.getCanalPreferido());
+        valores.put("circulo_id", InsertHelper.idONull(c.getCirculoID()));
+        valores.put("rol_relacion", c.getRolRelacion());
+        valores.put("cadencia_dias", InsertHelper.positivoONull(c.getCadenciaDias()));
+        valores.put("prioritario", c.getPrioritario());
+        valores.put("intereses", c.getIntereses());
+        valores.put("cumpleanos", c.getDate());
+        valores.put("familia", c.getFamilia());
+        valores.put("aficiones", c.getAficiones());
+        valores.put("hito_profesional", c.getHitoProfesional());
+        valores.put("como_nos_conocimos", c.getComoConocidos());
+        valores.put("presentado_por_id", InsertHelper.idONull(c.getPresentadoPorID()));
+        valores.put("proximo_paso", c.getProximoPaso());
+        valores.put("proximo_paso_fecha", c.getProximoPasoFecha());
+        valores.put("origen", c.getOrigen());
+        valores.put("id_externo", c.getIdExterno());
+
+        long id = insert.insertar("contactos", valores);
+        return buscarPorID(id).orElseThrow();
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM contactos WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Usuario borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
+        }
+    }
+
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM contactos WHERE id = ?";
+            jdbc.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
     }
 
     public List<Contactos> sacarTodos() {
