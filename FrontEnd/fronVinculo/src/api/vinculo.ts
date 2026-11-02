@@ -61,6 +61,15 @@ export function mensajeError(e: unknown): string {
   return e instanceof Error ? e.message : 'Error desconocido';
 }
 
+/** Como mensajeError, pero explica el caso de que el backend aún no tenga la ruta PUT de edición */
+export function mensajeEdicion(e: unknown): string {
+  // Ruta inexistente: 405, o 404 sin mensaje propio del backend (el 404 de "no encontrado" sí lo trae)
+  if (e instanceof ApiError && (e.status === 405 || (e.status === 404 && e.message.startsWith('El backend respondió')))) {
+    return 'El backend todavía no permite guardar cambios. No se ha modificado nada.';
+  }
+  return mensajeError(e);
+}
+
 export const api = {
   contactos: async () => (await get<Contacto[] | null>('/contacto/todos')) ?? [],
   contacto: (id: number) => get<Contacto | null>(`/contacto/porID/${id}`),
@@ -68,17 +77,21 @@ export const api = {
   crearContacto: (datos: PeticionContacto) => send<Contacto>('POST', '/contacto', datos),
   // El backend borra con GET /borrar/{id}; la base de datos borra en cascada sus notas, interacciones, etc.
   borrarContacto: (id: number) => get<null>(`/contacto/borrar/${id}`),
+  // Edición: PUT /{recurso}/{id} con el mismo cuerpo que el POST de crear; responde el registro actualizado
+  actualizarContacto: (id: number, datos: PeticionContacto) => send<Contacto>('PUT', `/contacto/${id}`, datos),
 
   circulos: async () => (await get<Circulo[] | null>('/circulo/todos')) ?? [],
   circulo: (id: number) => get<Circulo | null>(`/circulo/porID/${id}`),
   crearCirculo: (datos: PeticionCirculo) => send<Circulo>('POST', '/circulo', datos),
   borrarCirculo: (id: number) => get<null>(`/circulo/borrar/${id}`),
+  actualizarCirculo: (id: number, datos: PeticionCirculo) => send<Circulo>('PUT', `/circulo/${id}`, datos),
 
   notas: async () => (await get<Nota[] | null>('/notas/todas')) ?? [],
   nota: (id: number) => get<Nota | null>(`/notas/id/${id}`),
   contadorNotas: () => get<number>('/notas/contadorNotas'),
   crearNota: (datos: PeticionNota) => send<Nota>('POST', '/notas', datos),
   borrarNota: (id: number) => get<null>(`/notas/borrar/${id}`),
+  actualizarNota: (id: number, datos: PeticionNota) => send<Nota>('PUT', `/notas/${id}`, datos),
 
   interaccionesDe: async (contactoId: number) =>
     (await get<Interaccion[] | null>(`/interaccion/contacto/${contactoId}`)) ?? [],
@@ -88,6 +101,8 @@ export const api = {
   recordatoriosDe: async (contactoId: number) =>
     (await get<Recordatorio[] | null>(`/recordatorio/contacto/${contactoId}`)) ?? [],
   crearRecordatorio: (datos: PeticionRecordatorio) => send<Recordatorio>('POST', '/recordatorio', datos),
+  actualizarRecordatorio: (id: number, datos: PeticionRecordatorio) =>
+    send<Recordatorio>('PUT', `/recordatorio/${id}`, datos),
 
   perfil: () => get<Perfil | null>('/perfil'),
 

@@ -31,10 +31,11 @@ public class InteraccionService {
         return jdbc.query(sql, this::rowInteraccion);
     }
 
-    public void actualizar(int id) {
+    public void actualizar(int id,Interacciones interaccion) {
         try {
-            String sql = "UPDATE * FROM interacciones WHERE id = ?";
-            jdbc.update(sql,id);
+            String sql = "UPDATE interacciones SET contacto_id = ?, contacto_relacionado_id = ?, tipo = ?, titulo = ?, "
+                    + "fecha = ?, lugar = ?, resumen = ?, temas = ?, es_borrador = ? WHERE id = ?";
+            jdbc.update(sql,interaccion.getContactoID(),InsertHelper.idONull(interaccion.getContactoRelacionadoID()),interaccion.getTipo(),interaccion.getTitulo(),interaccion.getFecha(),interaccion.getLugar(),interaccion.getResumen(),interaccion.getTemas(),interaccion.getBorrador(),id);
             System.out.println("[circulo actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());

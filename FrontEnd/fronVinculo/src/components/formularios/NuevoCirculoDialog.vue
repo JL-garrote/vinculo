@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ModalBase from '../ModalBase.vue';
-import { api, ApiError, mensajeError } from '@/api/vinculo';
-import { store } from '@/api/store';
+import { api, ApiError, mensajeEdicion, mensajeError } from '@/api/vinculo';
+import { reemplazar, store } from '@/api/store';
 import type { Circulo } from '@/api/types';
 
-const emit = defineEmits<{ creado: [circulo: Circulo]; cerrar: [] }>();
+/** Con un círculo, el diálogo sirve para editarlo; sin él, para crear uno nuevo */
+const props = defineProps<{ circulo?: Circulo }>();
+const emit = defineEmits<{ creado: [circulo: Circulo]; guardado: [circulo: Circulo]; cerrar: [] }>();
 
-const nombre = ref('');
-const color = ref('#4338CA');
-const cadencia = ref<number | null>(30);
+const original = props.circulo;
+const nombre = ref(original?.nombre ?? '');
+const color = ref(original?.color ?? '#4338CA');
+const cadencia = ref<number | null>(original ? original.defectoDias || null : 30);
 const guardando = ref(false);
 const error = ref<string | null>(null);
 
@@ -17,17 +20,29 @@ async function guardar() {
   if (!nombre.value.trim() || guardando.value) return;
   guardando.value = true;
   error.value = null;
+  const datos = {
+    nombre: nombre.value.trim(),
+    color: color.value,
+    cadenciaDefectoDias: cadencia.value || null,
+  };
   try {
-    const circulo = await api.crearCirculo({
-      nombre: nombre.value.trim(),
-      color: color.value,
-      cadenciaDefectoDias: cadencia.value || null,
-    });
-    store.circulos.push(circulo);
-    store.circulos.sort((a, b) => a.orden - b.orden);
-    emit('creado', circulo);
+    if (original) {
+      const circulo = await api.actualizarCirculo(original.id, datos);
+      reemplazar(store.circulos, circulo);
+      emit('guardado', circulo);
+    } else {
+      const circulo = await api.crearCirculo(datos);
+      store.circulos.push(circulo);
+      store.circulos.sort((a, b) => a.orden - b.orden);
+      emit('creado', circulo);
+    }
   } catch (e) {
-    error.value = e instanceof ApiError && e.status === 409 ? 'Ya existe un círculo con ese nombre.' : mensajeError(e);
+    error.value =
+      e instanceof ApiError && e.status === 409
+        ? 'Ya existe un círculo con ese nombre.'
+        : original
+          ? mensajeEdicion(e)
+          : mensajeError(e);
   } finally {
     guardando.value = false;
   }
@@ -39,7 +54,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
 </script>
 
 <template>
-  <ModalBase titulo="Nuevo círculo" ancho="max-w-md" @cerrar="emit('cerrar')">
+  <ModalBase :titulo="original ? 'Editar círculo' : 'Nuevo círculo'" ancho="max-w-md" @cerrar="emit('cerrar')">
     <form class="flex flex-col gap-4" @submit.prevent="guardar">
       <label class="flex flex-col gap-1.5">
         <span :class="etiqueta">Nombre *</span>
@@ -85,7 +100,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
           class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!nombre.trim() || guardando"
         >
-          {{ guardando ? 'Guardando…' : 'Crear círculo' }}
+          {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Crear círculo' }}
         </button>
       </div>
     </form>

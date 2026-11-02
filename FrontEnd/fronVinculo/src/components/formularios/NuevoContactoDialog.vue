@@ -1,43 +1,49 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import ModalBase from '../ModalBase.vue';
-import { api, mensajeError } from '@/api/vinculo';
-import { store } from '@/api/store';
-import { canales, desdeInputFecha, nombreCompleto } from '@/api/format';
-import type { CanalPreferido, Contacto } from '@/api/types';
+import { api, mensajeEdicion, mensajeError } from '@/api/vinculo';
+import { reemplazar, store } from '@/api/store';
+import { aInputFecha, canales, desdeInputFecha, nombreCompleto } from '@/api/format';
+import type { CanalPreferido, Contacto, PeticionContacto } from '@/api/types';
 
-const emit = defineEmits<{ creado: [contacto: Contacto]; cerrar: [] }>();
+/** Con un contacto, el diálogo sirve para editarlo; sin él, para crear uno nuevo */
+const props = defineProps<{ contacto?: Contacto }>();
+const emit = defineEmits<{ creado: [contacto: Contacto]; guardado: [contacto: Contacto]; cerrar: [] }>();
 
+const original = props.contacto;
 const form = reactive({
-  tratamiento: '',
-  nombre: '',
-  apellidos: '',
-  empresa: '',
-  cargo: '',
-  email: '',
-  telefono: '',
-  ciudad: '',
-  pais: '',
-  linkedinURI: '',
-  canalPreferido: '' as CanalPreferido | '',
-  circuloID: 0,
-  rolRelacion: '',
-  cadenciaDias: null as number | null,
-  prioritario: false,
-  intereses: '',
-  cumpleanos: '',
-  comoConocidos: '',
-  presentadoPorID: 0,
-  proximoPaso: '',
-  proximoPasoFecha: '',
+  tratamiento: original?.tratamiento ?? '',
+  nombre: original?.nombre ?? '',
+  apellidos: original?.apellidos ?? '',
+  empresa: original?.empresa ?? '',
+  cargo: original?.cargo ?? '',
+  email: original?.email ?? '',
+  telefono: original?.telefono ?? '',
+  ciudad: original?.ciudad ?? '',
+  pais: original?.pais ?? '',
+  linkedinURI: original?.linkedinURI ?? '',
+  canalPreferido: (original?.canalPreferido ?? '') as CanalPreferido | '',
+  circuloID: original?.circuloID ?? 0,
+  rolRelacion: original?.rolRelacion ?? '',
+  cadenciaDias: (original?.cadenciaDias || null) as number | null,
+  prioritario: !!original?.prioritario,
+  intereses: original?.intereses ?? '',
+  cumpleanos: original?.date?.slice(0, 10) ?? '',
+  comoConocidos: original?.comoConocidos ?? '',
+  presentadoPorID: original?.presentadoPorID ?? 0,
+  proximoPaso: original?.proximoPaso ?? '',
+  proximoPasoFecha: aInputFecha(original?.proximoPasoFecha ?? null),
 });
 
 const guardando = ref(false);
 const error = ref<string | null>(null);
 const masDatos = ref(false);
 
+// Al editar, el propio contacto no puede habérselo presentado a sí mismo
 const contactosOrdenados = computed(() =>
-  [...store.contactos].sort((a, b) => nombreCompleto(a, false).localeCompare(nombreCompleto(b, false), 'es')),
+  store.contactos
+    .filter((c) => c.id !== original?.id)
+    .sort((a, b) => nombreCompleto(a, false).localeCompare(nombreCompleto(b, false), 'es')),
 );
 
 const texto = (v: string) => v.trim() || null;
@@ -47,7 +53,7 @@ async function guardar() {
   guardando.value = true;
   error.value = null;
   try {
-    const contacto = await api.crearContacto({
+    const datos: PeticionContacto = {
       tratamiento: texto(form.tratamiento),
       nombre: form.nombre.trim(),
       apellidos: texto(form.apellidos),
@@ -69,11 +75,27 @@ async function guardar() {
       presentadoPorID: form.presentadoPorID || null,
       proximoPaso: texto(form.proximoPaso),
       proximoPasoFecha: desdeInputFecha(form.proximoPasoFecha),
-    });
-    store.contactos.push(contacto);
-    emit('creado', contacto);
+    };
+    if (original) {
+      // Los campos que este formulario no muestra se envían como estaban, para que el PUT no los vacíe
+      const contacto = await api.actualizarContacto(original.id, {
+        ...datos,
+        fotoURI: original.fotoURI,
+        familia: original.familia,
+        aficiones: original.aficiones,
+        hitoProfesional: original.hitoProfesional,
+        origen: original.origen,
+        idExterno: original.idExterno,
+      });
+      reemplazar(store.contactos, contacto);
+      emit('guardado', contacto);
+    } else {
+      const contacto = await api.crearContacto(datos);
+      store.contactos.push(contacto);
+      emit('creado', contacto);
+    }
   } catch (e) {
-    error.value = mensajeError(e);
+    error.value = original ? mensajeEdicion(e) : mensajeError(e);
   } finally {
     guardando.value = false;
   }
@@ -85,7 +107,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
 </script>
 
 <template>
-  <ModalBase titulo="Nuevo contacto" ancho="max-w-2xl" @cerrar="emit('cerrar')">
+  <ModalBase :titulo="original ? 'Editar contacto' : 'Nuevo contacto'" ancho="max-w-2xl" @cerrar="emit('cerrar')">
     <form class="flex flex-col gap-4" @submit.prevent="guardar">
       <div class="grid grid-cols-1 sm:grid-cols-[110px_1fr_1fr] gap-3">
         <label class="flex flex-col gap-1.5">
@@ -216,7 +238,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
           class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!form.nombre.trim() || guardando"
         >
-          {{ guardando ? 'Guardando…' : 'Crear contacto' }}
+          {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Crear contacto' }}
         </button>
       </div>
     </form>
