@@ -68,6 +68,21 @@ public class ContactoService {
         }
     }
 
+    public void actualizar(int id,Contactos contact) {
+        try {
+            String sql = "UPDATE contactos SET tratamiento = ?, nombre = ?, apellidos = ?, foto_url = ?, "
+                    + "empresa = ?, cargo = ?, ciudad = ?, pais = ?, email = ?, telefono = ?, linkedin_url = ?, "
+                    + "canal_preferido = ?, circulo_id = ?, rol_relacion = ?, cadencia_dias = ?, prioritario = ?, "
+                    + "intereses = ?, cumpleanos = ?, familia = ?, aficiones = ?, hito_profesional = ?, "
+                    + "como_nos_conocimos = ?, presentado_por_id = ?, proximo_paso = ?, proximo_paso_fecha = ?, "
+                    + "origen = ?, id_externo = ? WHERE id = ?";
+            jdbc.update(sql,contact.getTratamiento(),contact.getNombre(),contact.getApellidos(),contact.getFotoURI(),contact.getEmpresa(),contact.getCargo(),contact.getCiudad(),contact.getPais(),contact.getEmail(),contact.getTelefono(),contact.getLinkedinURI(),contact.getCanalPreferido(),InsertHelper.idONull(contact.getCirculoID()),contact.getRolRelacion(),InsertHelper.positivoONull(contact.getCadenciaDias()),contact.getPrioritario(),contact.getIntereses(),contact.getDate(),contact.getFamilia(),contact.getAficiones(),contact.getHitoProfesional(),contact.getComoConocidos(),InsertHelper.idONull(contact.getPresentadoPorID()),contact.getProximoPaso(),contact.getProximoPasoFecha(),contact.getOrigen(),contact.getIdExterno(),id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public List<Contactos> sacarTodos() {
         List<Contactos> contactosList = null;
         try {

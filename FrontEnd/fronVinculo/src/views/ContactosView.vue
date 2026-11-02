@@ -11,6 +11,7 @@ defineEmits<{ abrir: [id: number]; nuevoContacto: [] }>();
 
 const creandoCirculo = ref(false);
 const borrandoCirculo = ref(false);
+const editandoCirculo = ref(false);
 const importando = ref(false);
 
 interface Metric {
@@ -276,6 +277,14 @@ const selectClass =
         <button
           v-if="circuloActivo"
           type="button"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-1 shrink-0 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+          @click="editandoCirculo = true"
+        >
+          <span class="material-symbols-outlined text-base">edit</span> Editar círculo
+        </button>
+        <button
+          v-if="circuloActivo"
+          type="button"
           class="px-4 py-2 rounded-full font-label-lg text-label-lg flex items-center gap-1 shrink-0 text-error hover:bg-error-container transition-colors"
           @click="borrandoCirculo = true"
         >
@@ -457,6 +466,12 @@ const selectClass =
       v-if="creandoCirculo"
       @creado="(c) => { creandoCirculo = false; activeCircle = c.id; }"
       @cerrar="creandoCirculo = false"
+    />
+    <NuevoCirculoDialog
+      v-if="editandoCirculo && circuloActivo"
+      :circulo="circuloActivo"
+      @guardado="editandoCirculo = false"
+      @cerrar="editandoCirculo = false"
     />
     <ConfirmarBorradoDialog
       v-if="borrandoCirculo && circuloActivo"
