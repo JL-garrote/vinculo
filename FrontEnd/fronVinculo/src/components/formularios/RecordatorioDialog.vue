@@ -41,7 +41,14 @@ async function guardar() {
   };
   try {
     if (original) {
-      const recordatorio = await api.actualizarRecordatorio(original.id, datos);
+      const recordatorio = await api.actualizarRecordatorio({
+        ...original,
+        contactoID: datos.contactoID ?? 0,
+        titulo: datos.titulo,
+        descripcion: datos.descripcion,
+        venceEnFecha: datos.venceEn,
+        recurrenciaDias: datos.recurrenciaDias ?? 0,
+      });
       reemplazar(store.recordatorios, recordatorio);
       store.recordatorios.sort((a, b) => a.venceEnFecha.localeCompare(b.venceEnFecha));
       emit('guardado', recordatorio);

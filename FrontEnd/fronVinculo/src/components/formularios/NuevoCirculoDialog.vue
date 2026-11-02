@@ -27,7 +27,12 @@ async function guardar() {
   };
   try {
     if (original) {
-      const circulo = await api.actualizarCirculo(original.id, datos);
+      const circulo = await api.actualizarCirculo({
+        ...original,
+        nombre: datos.nombre,
+        color: datos.color.toUpperCase(),
+        defectoDias: datos.cadenciaDefectoDias ?? 0,
+      });
       reemplazar(store.circulos, circulo);
       emit('guardado', circulo);
     } else {

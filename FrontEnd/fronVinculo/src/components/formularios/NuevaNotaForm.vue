@@ -30,7 +30,16 @@ async function guardar() {
   };
   try {
     if (original) {
-      reemplazar(store.notas, await api.actualizarNota(original.id, datos));
+      reemplazar(
+        store.notas,
+        await api.actualizarNota({
+          ...original,
+          tipo: datos.tipo,
+          titulo: datos.titulo,
+          contenido: datos.contenido,
+          fijada: datos.fijada ? 1 : 0,
+        }),
+      );
     } else {
       store.notas.push(await api.crearNota(datos));
     }

@@ -77,15 +77,31 @@ async function guardar() {
       proximoPasoFecha: desdeInputFecha(form.proximoPasoFecha),
     };
     if (original) {
-      // Los campos que este formulario no muestra se envían como estaban, para que el PUT no los vacíe
-      const contacto = await api.actualizarContacto(original.id, {
-        ...datos,
-        fotoURI: original.fotoURI,
-        familia: original.familia,
-        aficiones: original.aficiones,
-        hitoProfesional: original.hitoProfesional,
-        origen: original.origen,
-        idExterno: original.idExterno,
+      // Se envía el contacto completo en el formato del GET: los campos que este formulario no muestra
+      // (familia, foto, origen…) van como estaban, para que el UPDATE no los vacíe
+      const contacto = await api.actualizarContacto({
+        ...original,
+        tratamiento: datos.tratamiento ?? null,
+        nombre: datos.nombre,
+        apellidos: datos.apellidos ?? null,
+        empresa: datos.empresa ?? null,
+        cargo: datos.cargo ?? null,
+        email: datos.email ?? null,
+        telefono: datos.telefono ?? null,
+        ciudad: datos.ciudad ?? null,
+        pais: datos.pais ?? null,
+        linkedinURI: datos.linkedinURI ?? null,
+        canalPreferido: datos.canalPreferido ?? null,
+        circuloID: datos.circuloID ?? 0,
+        rolRelacion: datos.rolRelacion ?? null,
+        cadenciaDias: datos.cadenciaDias ?? 0,
+        prioritario: datos.prioritario ? 1 : 0,
+        intereses: datos.intereses ?? null,
+        date: datos.cumpleanos ?? null,
+        comoConocidos: datos.comoConocidos ?? null,
+        presentadoPorID: datos.presentadoPorID ?? 0,
+        proximoPaso: datos.proximoPaso ?? null,
+        proximoPasoFecha: datos.proximoPasoFecha ?? null,
       });
       reemplazar(store.contactos, contacto);
       emit('guardado', contacto);

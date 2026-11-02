@@ -125,10 +125,6 @@ export interface PeticionContacto {
   /** YYYY-MM-DD */
   cumpleanos?: string | null;
   comoConocidos?: string | null;
-  fotoURI?: string | null;
-  familia?: string | null;
-  aficiones?: string | null;
-  hitoProfesional?: string | null;
   presentadoPorID?: number | null;
   proximoPaso?: string | null;
   proximoPasoFecha?: string | null;
