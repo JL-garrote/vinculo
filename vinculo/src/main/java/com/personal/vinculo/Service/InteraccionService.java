@@ -31,6 +31,17 @@ public class InteraccionService {
         return jdbc.query(sql, this::rowInteraccion);
     }
 
+    public void actualizar(int id,Interacciones interaccion) {
+        try {
+            String sql = "UPDATE interacciones SET contacto_id = ?, contacto_relacionado_id = ?, tipo = ?, titulo = ?, "
+                    + "fecha = ?, lugar = ?, resumen = ?, temas = ?, es_borrador = ? WHERE id = ?";
+            jdbc.update(sql,interaccion.getContactoID(),InsertHelper.idONull(interaccion.getContactoRelacionadoID()),interaccion.getTipo(),interaccion.getTitulo(),interaccion.getFecha(),interaccion.getLugar(),interaccion.getResumen(),interaccion.getTemas(),interaccion.getBorrador(),id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public List<Interacciones> deContacto(long contactoID) {
         String sql = "SELECT * FROM interacciones WHERE contacto_id = ? OR contacto_relacionado_id = ? "
                 + "ORDER BY fecha DESC, id DESC";
@@ -42,10 +53,6 @@ public class InteraccionService {
         return jdbc.query(sql, this::rowInteraccion, id).stream().findFirst();
     }
 
-    /**
-     * Inserta la interacción. Si no es borrador, el trigger de la base de datos
-     * marca como completados los recordatorios pendientes del contacto.
-     */
     public Interacciones crear(Interacciones i) {
         Map<String, Object> valores = new HashMap<>();
         valores.put("contacto_id", i.getContactoID());

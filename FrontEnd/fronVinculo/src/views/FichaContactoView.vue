@@ -6,6 +6,7 @@ import InteractionLogger, {
 } from '@/components/ficha/InteractionLogger.vue';
 import AvatarContacto from '@/components/AvatarContacto.vue';
 import NuevaNotaForm from '@/components/formularios/NuevaNotaForm.vue';
+import NuevoContactoDialog from '@/components/formularios/NuevoContactoDialog.vue';
 import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
 import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
 import {
@@ -187,6 +188,21 @@ function recordatorioCreado(r: Recordatorio) {
 
 const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
 
+// ---------- Ediciones ----------
+
+const editandoContacto = ref(false);
+const notaEditando = ref<Nota | null>(null);
+const recordatorioEditando = ref<Recordatorio | null>(null);
+
+function recordatorioGuardado(r: Recordatorio) {
+  recordatorioEditando.value = null;
+  // Si se ha pasado a otro contacto, deja de verse en esta ficha
+  recordatorios.value =
+    r.contactoID === contacto.value?.id
+      ? recordatorios.value.map((x) => (x.id === r.id ? r : x))
+      : recordatorios.value.filter((x) => x.id !== r.id);
+}
+
 // ---------- Borrados ----------
 
 const borrandoContacto = ref(false);
@@ -326,6 +342,14 @@ function contactoBorrado() {
           </button>
           <button
             type="button"
+            class="p-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+            title="Editar contacto"
+            @click="editandoContacto = true"
+          >
+            <span class="material-symbols-outlined text-base">edit</span>
+          </button>
+          <button
+            type="button"
             class="p-2.5 rounded-lg text-error hover:bg-error-container transition-colors"
             title="Eliminar contacto"
             @click="borrandoContacto = true"
@@ -444,39 +468,55 @@ function contactoBorrado() {
           <p v-if="!notas.length && !creandoNota" class="font-body-sm text-body-sm text-on-surface-variant">
             Este contacto todavía no tiene notas.
           </p>
-          <div
-            v-for="nota in notas"
-            :key="nota.id"
-            class="p-4 rounded-lg flex flex-col gap-2"
-            :class="nota.fijada ? 'bg-tertiary-fixed/30' : 'bg-surface-container-low'"
-          >
-            <div class="flex items-center justify-between gap-2">
-              <span class="flex items-center gap-1.5 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-                <span v-if="nota.fijada" class="material-symbols-outlined text-xs text-tertiary-container">push_pin</span>
-                {{ nota.titulo ?? (tiposNota[nota.tipo] ?? tiposNota.general).label }}
-              </span>
-              <div class="flex items-center gap-1">
-                <span
-                  class="px-2 py-0.5 rounded font-label-sm text-label-sm"
-                  :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
-                >
-                  {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
+          <template v-for="nota in notas" :key="nota.id">
+            <NuevaNotaForm
+              v-if="notaEditando?.id === nota.id"
+              :contacto-id="contacto.id"
+              :nota="nota"
+              @creada="notaEditando = null"
+              @cancelar="notaEditando = null"
+            />
+            <div
+              v-else
+              class="p-4 rounded-lg flex flex-col gap-2"
+              :class="nota.fijada ? 'bg-tertiary-fixed/30' : 'bg-surface-container-low'"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="flex items-center gap-1.5 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <span v-if="nota.fijada" class="material-symbols-outlined text-xs text-tertiary-container">push_pin</span>
+                  {{ nota.titulo ?? (tiposNota[nota.tipo] ?? tiposNota.general).label }}
                 </span>
-                <button
-                  type="button"
-                  class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
-                  title="Borrar nota"
-                  @click="notaABorrar = nota"
-                >
-                  <span class="material-symbols-outlined text-base">delete</span>
-                </button>
+                <div class="flex items-center gap-1">
+                  <span
+                    class="px-2 py-0.5 rounded font-label-sm text-label-sm"
+                    :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
+                  >
+                    {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
+                  </span>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+                    title="Editar nota"
+                    @click="notaEditando = nota"
+                  >
+                    <span class="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                    title="Borrar nota"
+                    @click="notaABorrar = nota"
+                  >
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
               </div>
+              <p class="font-body-sm text-body-sm text-on-surface">{{ nota.contenido }}</p>
+              <span class="font-label-sm text-label-sm text-outline">
+                {{ parseFecha(nota.creadoEn) ? formatoFecha(parseFecha(nota.creadoEn)!) : '' }}
+              </span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface">{{ nota.contenido }}</p>
-            <span class="font-label-sm text-label-sm text-outline">
-              {{ parseFecha(nota.creadoEn) ? formatoFecha(parseFecha(nota.creadoEn)!) : '' }}
-            </span>
-          </div>
+          </template>
         </div>
 
         <!-- Recordatorios -->
@@ -521,6 +561,15 @@ function contactoBorrado() {
                 <template v-if="r.estado !== 'pendiente'"> · {{ r.estado }}</template>
               </span>
             </div>
+            <button
+              v-if="r.estado === 'pendiente'"
+              type="button"
+              class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+              title="Editar recordatorio"
+              @click="recordatorioEditando = r"
+            >
+              <span class="material-symbols-outlined text-base">edit</span>
+            </button>
           </div>
         </div>
 
@@ -660,6 +709,18 @@ function contactoBorrado() {
       :contacto-id-inicial="contacto.id"
       @creado="recordatorioCreado"
       @cerrar="programando = false"
+    />
+    <RecordatorioDialog
+      v-if="recordatorioEditando"
+      :recordatorio="recordatorioEditando"
+      @guardado="recordatorioGuardado"
+      @cerrar="recordatorioEditando = null"
+    />
+    <NuevoContactoDialog
+      v-if="editandoContacto"
+      :contacto="contacto"
+      @guardado="editandoContacto = false"
+      @cerrar="editandoContacto = false"
     />
 
     <ConfirmarBorradoDialog
