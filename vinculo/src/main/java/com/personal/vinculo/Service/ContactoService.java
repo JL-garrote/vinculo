@@ -68,6 +68,16 @@ public class ContactoService {
         }
     }
 
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM contactos WHERE id = ?";
+            jdbc.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public List<Contactos> sacarTodos() {
         List<Contactos> contactosList = null;
         try {

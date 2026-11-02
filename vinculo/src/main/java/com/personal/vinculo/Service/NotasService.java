@@ -36,6 +36,16 @@ public class NotasService {
         return buscarPorID((int) id).orElseThrow();
     }
 
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM notas WHERE id = ?";
+            jdbc.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public void borrarContacto(int id) {
         try {
             String sql = "DELETE FROM notas WHERE id = ?";
