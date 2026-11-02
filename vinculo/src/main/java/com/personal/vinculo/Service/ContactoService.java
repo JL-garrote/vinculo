@@ -77,7 +77,7 @@ public class ContactoService {
                     + "como_nos_conocimos = ?, presentado_por_id = ?, proximo_paso = ?, proximo_paso_fecha = ?, "
                     + "origen = ?, id_externo = ? WHERE id = ?";
             jdbc.update(sql,contact.getTratamiento(),contact.getNombre(),contact.getApellidos(),contact.getFotoURI(),contact.getEmpresa(),contact.getCargo(),contact.getCiudad(),contact.getPais(),contact.getEmail(),contact.getTelefono(),contact.getLinkedinURI(),contact.getCanalPreferido(),InsertHelper.idONull(contact.getCirculoID()),contact.getRolRelacion(),InsertHelper.positivoONull(contact.getCadenciaDias()),contact.getPrioritario(),contact.getIntereses(),contact.getDate(),contact.getFamilia(),contact.getAficiones(),contact.getHitoProfesional(),contact.getComoConocidos(),InsertHelper.idONull(contact.getPresentadoPorID()),contact.getProximoPaso(),contact.getProximoPasoFecha(),contact.getOrigen(),contact.getIdExterno(),id);
-            System.out.println("[circulo actualizado correctamente]");
+            System.out.println("[contacto actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
         }
