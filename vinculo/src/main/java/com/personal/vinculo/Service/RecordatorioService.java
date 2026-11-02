@@ -32,6 +32,16 @@ public class RecordatorioService {
         return jdbc.query(sql, this::rowRecordatorio, contactoID);
     }
 
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM recordatorios WHERE id = ?";
+            jdbc.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public Optional<Recordatorios> buscarPorID(long id) {
         String sql = "SELECT * FROM recordatorios WHERE id = ?";
         return jdbc.query(sql, this::rowRecordatorio, id).stream().findFirst();

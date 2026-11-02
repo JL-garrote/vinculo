@@ -33,6 +33,11 @@ public class RecordatorioController {
         return recordatorios.deContacto(contactoID);
     }
 
+    @GetMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id) {
+        recordatorios.actualizar(id);
+    }
+
     public record PeticionRecordatorio(Long contactoID, String titulo, String descripcion, String venceEn,
                                        Integer recurrenciaDias) {
     }

@@ -38,6 +38,16 @@ public class CirculoService {
         return buscarPorID((int) id).orElseThrow();
     }
 
+    public void actualizar(int id) {
+        try {
+            String sql = "UPDATE * FROM circulos WHERE id = ?";
+            jdbcTemplate.update(sql,id);
+            System.out.println("[circulo actualizado correctamente]");
+        } catch (Exception e) {
+            System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
     public void borrarContacto(int id) {
         try {
             String sql = "DELETE FROM circulos WHERE id = ?";
