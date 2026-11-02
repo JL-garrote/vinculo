@@ -45,6 +45,11 @@ public class ContactoController {
         contacto.borrarContacto(id);
     }
 
+    @GetMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id) {
+        contacto.actualizar(id);
+    }
+
     public record PeticionContacto(String tratamiento, String nombre, String apellidos, String fotoURI,
                                    String empresa, String cargo, String ciudad, String pais, String email,
                                    String telefono, String linkedinURI, String canalPreferido, Long circuloID,

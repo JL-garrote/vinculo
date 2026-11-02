@@ -43,6 +43,11 @@ public class CirculoController {
         service.borrarContacto(id);
     }
 
+    @GetMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id) {
+        service.actualizar(id);
+    }
+
     @PostMapping
     public ResponseEntity<Circulos> crear(@RequestBody PeticionCirculo p) {
         Validar.obligatorio(p.nombre(), "nombre");

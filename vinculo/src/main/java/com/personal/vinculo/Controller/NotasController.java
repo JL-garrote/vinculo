@@ -35,6 +35,11 @@ public class NotasController {
         notas.borrarContacto(id);
     }
 
+    @GetMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id) {
+        notas.actualizar(id);
+    }
+
     @GetMapping("todas")
     public List<Notas> todas() {
         return notas.sacarTodos();

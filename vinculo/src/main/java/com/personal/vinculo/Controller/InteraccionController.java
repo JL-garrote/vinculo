@@ -33,6 +33,11 @@ public class InteraccionController {
         return interacciones.deContacto(contactoID);
     }
 
+    @GetMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id) {
+        interacciones.actualizar(id);
+    }
+
     public record PeticionInteraccion(Long contactoID, Long contactoRelacionadoID, String tipo, String titulo,
                                       String fecha, String lugar, String resumen, String temas, Boolean borrador) {
     }
