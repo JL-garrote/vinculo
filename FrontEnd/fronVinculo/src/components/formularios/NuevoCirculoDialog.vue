@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ModalBase from '../ModalBase.vue';
 import { api, ApiError, mensajeEdicion, mensajeError } from '@/api/vinculo';
 import { reemplazar, store } from '@/api/store';
+import { estiloCirculo } from '@/api/format';
 import type { Circulo } from '@/api/types';
 
 /** Con un círculo, el diálogo sirve para editarlo; sin él, para crear uno nuevo */
@@ -83,7 +84,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         <span class="font-label-sm text-label-sm text-on-surface-variant">Vista previa:</span>
         <span
           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold"
-          :style="{ backgroundColor: `${color}26`, color }"
+          :style="estiloCirculo(color, 'hundida')"
         >
           <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: color }"></span>
           {{ nombre || 'Nuevo círculo' }}
@@ -102,7 +103,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         </button>
         <button
           type="submit"
-          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
+          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!nombre.trim() || guardando"
         >
           {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Crear círculo' }}

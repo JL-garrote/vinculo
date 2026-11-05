@@ -40,7 +40,7 @@ public class NotasService {
         try {
             String sql = "UPDATE notas SET contacto_id = ?, tipo = ?, titulo = ?, contenido = ?, fijada = ? WHERE id = ?";
             jdbc.update(sql,nota.getContactoID(),nota.getTipo(),nota.getTitulo(),nota.getContenido(),nota.getFijada(),id);
-            System.out.println("[circulo actualizado correctamente]");
+            System.out.println("[nota actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
         }

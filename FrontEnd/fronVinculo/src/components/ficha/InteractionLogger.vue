@@ -74,7 +74,7 @@ defineExpose({ focus });
   <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary">add_comment</span>
+        <span aria-hidden="true" class="material-symbols-outlined text-primary">add_comment</span>
         <span>Registrar Nueva Interacción</span>
       </h2>
       <span class="font-label-sm text-label-sm text-on-surface-variant">Hoy, {{ today }}</span>
@@ -94,7 +94,7 @@ defineExpose({ focus });
         "
         @click="activeType = tab.type"
       >
-        <span class="material-symbols-outlined text-sm" :class="{ 'text-secondary': activeType === tab.type }">
+        <span aria-hidden="true" class="material-symbols-outlined text-sm" :class="{ 'text-secondary': activeType === tab.type }">
           {{ tab.icon }}
         </span>
         <span>{{ tab.label }}</span>
@@ -141,17 +141,17 @@ defineExpose({ focus });
           <button
             type="button"
             class="px-4 py-1.5 font-label-md text-label-md rounded-lg transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50"
-            :class="saved === 'registro' ? 'bg-secondary text-on-secondary' : 'bg-primary-container hover:bg-primary text-on-primary'"
+            :class="saved === 'registro' ? 'bg-secondary text-on-secondary' : 'bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary'"
             :disabled="saving"
             @click="save(false)"
           >
             <template v-if="saved === 'registro'">
-              <span class="material-symbols-outlined text-sm">done_all</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-sm">done_all</span>
               <span>Guardado</span>
             </template>
             <template v-else>
               <span>{{ saving ? 'Guardando…' : 'Guardar Registro' }}</span>
-              <span class="material-symbols-outlined text-sm">check</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-sm">check</span>
             </template>
           </button>
         </div>
