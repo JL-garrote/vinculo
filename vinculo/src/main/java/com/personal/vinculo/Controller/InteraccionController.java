@@ -28,6 +28,11 @@ public class InteraccionController {
         return interacciones.deContacto(contactoID);
     }
 
+    @GetMapping("/borrar/{id}")
+    public void borrado(@PathVariable int id) {
+        interacciones.borrarContacto(id);
+    }
+
     @PutMapping("/actualizar/{id}")
     public void actualizar(@PathVariable int id,@RequestBody Interacciones interaccion) {
         interacciones.actualizar(id,interaccion);
