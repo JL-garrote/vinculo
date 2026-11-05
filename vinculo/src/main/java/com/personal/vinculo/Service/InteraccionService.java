@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Interacciones;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,16 @@ public class InteraccionService {
             System.out.println("[interaccion actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM interacciones WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Interaccion borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
         }
     }
 

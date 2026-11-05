@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Recordatorios;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,16 @@ public class RecordatorioService {
             System.out.println("[recordatorio actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM recordatorios WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Recordatorio borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
         }
     }
 
