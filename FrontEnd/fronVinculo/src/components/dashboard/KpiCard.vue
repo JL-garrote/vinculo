@@ -23,10 +23,10 @@ defineProps<{ kpi: Kpi }>();
   >
     <div class="flex items-start justify-between">
       <div class="p-2 rounded-lg" :class="kpi.iconClass">
-        <span class="material-symbols-outlined text-xl">{{ kpi.icon }}</span>
+        <span aria-hidden="true" class="material-symbols-outlined text-xl">{{ kpi.icon }}</span>
       </div>
       <span class="inline-flex items-center gap-1 text-label-sm font-label-sm" :class="kpi.badgeClass">
-        <span v-if="kpi.badgeIcon" class="material-symbols-outlined text-sm">{{ kpi.badgeIcon }}</span>
+        <span v-if="kpi.badgeIcon" aria-hidden="true" class="material-symbols-outlined text-sm">{{ kpi.badgeIcon }}</span>
         {{ kpi.badge }}
       </span>
     </div>

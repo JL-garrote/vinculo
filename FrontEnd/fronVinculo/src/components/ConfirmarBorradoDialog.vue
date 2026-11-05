@@ -32,7 +32,7 @@ async function confirmar() {
 <template>
   <ModalBase :titulo="titulo" ancho="max-w-md" @cerrar="emit('cerrar')">
     <div class="flex items-start gap-3">
-      <span class="p-2 rounded-full bg-error-container text-on-error-container material-symbols-outlined">delete</span>
+      <span aria-hidden="true" class="p-2 rounded-full bg-error-container text-on-error-container material-symbols-outlined">delete</span>
       <p class="font-body-md text-body-md text-on-surface-variant">{{ mensaje }} Esta acción no se puede deshacer.</p>
     </div>
     <p v-if="error" class="p-3 rounded-lg bg-error-container text-on-error-container font-body-sm text-body-sm">

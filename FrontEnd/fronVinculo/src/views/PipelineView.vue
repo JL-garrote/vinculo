@@ -258,18 +258,18 @@ async function quitar(entrada: PipelineContacto) {
               v-if="pipeline?.objetivo"
               class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md"
             >
-              <span class="material-symbols-outlined text-base text-primary">target</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-base text-primary">target</span>
               <span class="min-w-0">Objetivo: {{ pipeline.objetivo }}</span>
             </span>
           </div>
         </div>
         <button
           type="button"
-          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-all shadow-md disabled:opacity-50 self-start lg:self-auto"
+          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary dark:hover:bg-primary-fixed-dim transition-all shadow-md disabled:opacity-50 self-start lg:self-auto"
           :disabled="!pipeline"
           @click="abrirDialogo(null)"
         >
-          <span class="material-symbols-outlined text-base">person_add</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-base">person_add</span>
           <span>Añadir al Pipeline</span>
         </button>
       </div>
@@ -284,12 +284,12 @@ async function quitar(entrada: PipelineContacto) {
             <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">{{ metric.label }}</span>
             <span class="font-headline-lg text-headline-lg text-on-surface mt-1 leading-none">{{ metric.value }}</span>
             <span class="font-label-sm text-label-sm flex items-center gap-1 mt-1" :class="metric.detailClass">
-              <span v-if="metric.detailIcon" class="material-symbols-outlined text-xs">{{ metric.detailIcon }}</span>
+              <span v-if="metric.detailIcon" aria-hidden="true" class="material-symbols-outlined text-xs">{{ metric.detailIcon }}</span>
               {{ metric.detail }}
             </span>
           </div>
           <div class="w-12 h-12 rounded-xl flex items-center justify-center" :class="metric.iconClass">
-            <span class="material-symbols-outlined text-2xl">{{ metric.icon }}</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-2xl">{{ metric.icon }}</span>
           </div>
         </div>
 
@@ -326,7 +326,7 @@ async function quitar(entrada: PipelineContacto) {
                 stroke-width="3.5"
               />
             </svg>
-            <span class="material-symbols-outlined absolute text-secondary text-sm">handshake</span>
+            <span aria-hidden="true" class="material-symbols-outlined absolute text-secondary text-sm">handshake</span>
           </div>
         </div>
       </div>
@@ -336,7 +336,7 @@ async function quitar(entrada: PipelineContacto) {
     <div class="px-4 sm:px-6 lg:px-8 py-3 bg-surface flex flex-wrap items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
         <div class="relative w-full sm:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">
+          <span aria-hidden="true" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">
             search
           </span>
           <input
@@ -348,7 +348,7 @@ async function quitar(entrada: PipelineContacto) {
         </div>
 
         <div class="flex items-center bg-surface-container-lowest rounded-lg px-3 py-1.5 shadow-sm">
-          <span class="material-symbols-outlined text-base text-on-surface-variant mr-2">hub</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-base text-on-surface-variant mr-2">hub</span>
           <span class="font-label-sm text-label-sm text-on-surface-variant mr-1">Círculo:</span>
           <select
             v-model.number="circuloFiltro"
@@ -386,7 +386,7 @@ async function quitar(entrada: PipelineContacto) {
           :class="soloVencidas ? 'bg-error text-on-error' : 'bg-surface-container-lowest text-on-surface-variant hover:text-on-surface'"
           @click="soloVencidas = !soloVencidas"
         >
-          <span class="material-symbols-outlined text-base">notification_important</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-base">notification_important</span>
           Solo vencidas
         </button>
       </div>
@@ -400,7 +400,7 @@ async function quitar(entrada: PipelineContacto) {
       </button>
     </div>
     <div v-else-if="cargando" class="px-4 sm:px-8 py-16 flex items-center justify-center gap-3 text-on-surface-variant">
-      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      <span aria-hidden="true" class="material-symbols-outlined animate-spin">progress_activity</span>
       <span class="font-body-md text-body-md">Cargando pipeline…</span>
     </div>
     <p v-else-if="!pipeline" class="px-4 sm:px-8 py-16 text-center font-body-md text-body-md text-on-surface-variant">
@@ -432,7 +432,7 @@ async function quitar(entrada: PipelineContacto) {
               class="p-1 text-on-surface-variant hover:text-on-surface rounded-lg"
               @click="abrirDialogo(null, col.key)"
             >
-              <span class="material-symbols-outlined text-base">add</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-base">add</span>
             </button>
           </div>
 
@@ -462,7 +462,7 @@ async function quitar(entrada: PipelineContacto) {
     >
       <div class="flex items-center gap-4">
         <div class="w-10 h-10 shrink-0 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
-          <span class="material-symbols-outlined text-xl">psychology</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-xl">psychology</span>
         </div>
         <div class="flex flex-col">
           <span class="font-label-lg text-label-lg text-on-surface">Sugerencia del Asistente Relacional</span>
@@ -474,7 +474,7 @@ async function quitar(entrada: PipelineContacto) {
       </div>
       <button
         type="button"
-        class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm whitespace-nowrap"
+        class="px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary dark:hover:bg-primary-fixed-dim transition-colors shadow-sm whitespace-nowrap"
         @click="soloVencidas = true"
       >
         Ver acciones vencidas
