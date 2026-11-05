@@ -38,10 +38,10 @@ public class CirculoService {
         return buscarPorID((int) id).orElseThrow();
     }
 
-    public void actualizar(int id) {
+    public void actualizar(int id,Circulos circulo) {
         try {
-            String sql = "UPDATE * FROM circulos WHERE id = ?";
-            jdbcTemplate.update(sql,id);
+            String sql = "UPDATE circulos SET nombre = ?, color = ?, cadencia_defecto_dias = ?, orden = ? WHERE id = ?";
+            jdbcTemplate.update(sql,circulo.getNombre(),circulo.getColor(),InsertHelper.positivoONull(circulo.getDefectoDias()),circulo.getOrden(),id);
             System.out.println("[circulo actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());

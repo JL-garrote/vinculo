@@ -3,8 +3,7 @@ import { computed } from 'vue';
 import type { Contacto } from '@/api/types';
 import { circuloDe, notasDe } from '@/api/store';
 import {
-  canales,
-  conAlfa,
+  estiloCirculo,
   estadoProximoPaso,
   estiloEstado,
   formatoFecha,
@@ -24,7 +23,21 @@ const rol = computed(() => [props.contacto.cargo, props.contacto.empresa].filter
 const circulo = computed(() => circuloDe(props.contacto));
 const estado = computed(() => estiloEstado[estadoProximoPaso(props.contacto)]);
 const fecha = computed(() => parseFecha(props.contacto.proximoPasoFecha));
-const canal = computed(() => (props.contacto.canalPreferido ? canales[props.contacto.canalPreferido] : null));
+
+// "Contactar" abre de verdad el canal preferido; si no se puede, el primer medio disponible
+const contactar = computed(() => {
+  const tel = props.contacto.telefono?.replace(/[^\d+]/g, '') ?? '';
+  const email = props.contacto.email ?? '';
+  const preferido = props.contacto.canalPreferido;
+  const whatsapp = { href: `https://wa.me/${tel.replace('+', '')}`, externo: true, icon: 'chat', label: 'WhatsApp' };
+  const llamada = { href: `tel:${tel}`, externo: false, icon: 'call', label: 'Llamar' };
+  const correo = { href: `mailto:${email}`, externo: false, icon: 'mail', label: 'Email' };
+  if (preferido === 'whatsapp' && tel) return whatsapp;
+  if (preferido === 'email' && email) return correo;
+  if (tel) return llamada;
+  if (email) return correo;
+  return null;
+});
 
 // Contexto bajo el próximo paso: la nota fijada o, si no hay, sus intereses
 const contexto = computed(() => {
@@ -57,7 +70,7 @@ const contexto = computed(() => {
         <span
           v-if="circulo"
           class="inline-flex items-center px-2 py-0.5 rounded-md text-label-sm font-label-sm whitespace-nowrap"
-          :style="{ backgroundColor: conAlfa(circulo.color, 0.15), color: circulo.color }"
+          :style="estiloCirculo(circulo.color)"
         >
           {{ circulo.nombre }}
         </span>
@@ -66,7 +79,7 @@ const contexto = computed(() => {
       <div class="bg-surface-container-low rounded-lg p-3 flex flex-col gap-1.5">
         <div class="flex items-center justify-between gap-2 text-label-sm font-label-sm">
           <span class="flex items-center gap-1 font-semibold" :class="estado.texto">
-            <span class="material-symbols-outlined text-sm">event</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-sm">event</span>
             {{ contacto.proximoPaso }}
           </span>
           <span v-if="fecha" class="text-on-surface-variant whitespace-nowrap" :title="formatoFecha(fecha, true)">
@@ -78,21 +91,26 @@ const contexto = computed(() => {
     </div>
 
     <div class="flex flex-col gap-2 pt-2">
-      <div class="grid grid-cols-2 gap-2">
-        <button
-          type="button"
+      <div class="grid gap-2" :class="contactar ? 'grid-cols-2' : 'grid-cols-1'">
+        <a
+          v-if="contactar"
+          :href="contactar.href"
+          :target="contactar.externo ? '_blank' : undefined"
+          :rel="contactar.externo ? 'noopener' : undefined"
+          :aria-label="`${contactar.label}: ${nombre}${contactar.externo ? ' (se abre en otra pestaña)' : ''}`"
           class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-label-md transition-colors"
         >
-          <span class="material-symbols-outlined text-base text-secondary">{{ canal?.icon ?? 'chat' }}</span>
-          {{ canal?.label ?? 'Contactar' }}
-        </button>
+          <span aria-hidden="true" class="material-symbols-outlined text-base text-secondary">{{ contactar.icon }}</span>
+          {{ contactar.label }}
+        </a>
         <button
           type="button"
-          class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-label-md font-label-md transition-colors shadow-sm"
+          class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary text-label-md font-label-md transition-colors shadow-sm"
           @click="$emit('abrir', contacto.id)"
         >
-          <span class="material-symbols-outlined text-base">account_circle</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-base">account_circle</span>
           Ver ficha
+          <span class="sr-only">de {{ nombre }}</span>
         </button>
       </div>
     </div>

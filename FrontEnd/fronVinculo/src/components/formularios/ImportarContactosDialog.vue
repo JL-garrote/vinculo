@@ -150,7 +150,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
           "
           @click="fuente = key"
         >
-          <span class="material-symbols-outlined text-lg">{{ f.icon }}</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-lg">{{ f.icon }}</span>
           {{ f.label }}
         </button>
       </div>
@@ -168,7 +168,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         @dragleave="arrastrando = false"
         @drop.prevent="soltar"
       >
-        <span class="material-symbols-outlined text-4xl text-primary">upload_file</span>
+        <span aria-hidden="true" class="material-symbols-outlined text-4xl text-primary">upload_file</span>
         <span class="font-label-lg text-label-lg text-on-surface">Arrastra aquí el archivo .csv o haz clic para elegirlo</span>
         <span class="font-body-sm text-body-sm text-on-surface-variant">
           Se lee en tu navegador; no se guarda nada hasta que confirmes.
@@ -267,7 +267,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
           </button>
           <button
             type="button"
-            class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
+            class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
             :disabled="!marcadas.length"
             @click="importar"
           >
@@ -292,7 +292,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
     <!-- 4. Resultado -->
     <template v-else>
       <div class="flex items-start gap-3">
-        <span class="p-2 rounded-full bg-secondary-container text-secondary material-symbols-outlined">task_alt</span>
+        <span aria-hidden="true" class="p-2 rounded-full bg-secondary-container text-secondary material-symbols-outlined">task_alt</span>
         <div class="flex flex-col gap-1 font-body-md text-body-md text-on-surface">
           <p><strong>{{ resumen.creados }}</strong> contactos importados.</p>
           <p v-if="resumen.existian" class="text-on-surface-variant">
@@ -312,7 +312,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
       <div class="flex justify-end">
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm"
+          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm"
           @click="emit('cerrar')"
         >
           Listo

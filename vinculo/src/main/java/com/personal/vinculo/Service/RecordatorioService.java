@@ -32,11 +32,12 @@ public class RecordatorioService {
         return jdbc.query(sql, this::rowRecordatorio, contactoID);
     }
 
-    public void actualizar(int id) {
+    public void actualizar(int id,Recordatorios recordatorio) {
         try {
-            String sql = "UPDATE * FROM recordatorios WHERE id = ?";
-            jdbc.update(sql,id);
-            System.out.println("[circulo actualizado correctamente]");
+            String sql = "UPDATE recordatorios SET contacto_id = ?, titulo = ?, descripcion = ?, vence_en = ?, "
+                    + "recurrencia_dias = ? WHERE id = ?";
+            jdbc.update(sql,InsertHelper.idONull(recordatorio.getContactoID()),recordatorio.getTitulo(),recordatorio.getDescripcion(),recordatorio.getVenceEnFecha(),InsertHelper.positivoONull(recordatorio.getRecurrenciaDias()),id);
+            System.out.println("[recordatorio actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
         }
