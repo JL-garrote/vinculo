@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import ModalBase from '../ModalBase.vue';
-import { api, mensajeError } from '@/api/vinculo';
-import { store } from '@/api/store';
+import { api, mensajeEdicion, mensajeError } from '@/api/vinculo';
+import { reemplazar, store } from '@/api/store';
 import { aInputFecha, desdeInputFecha, fechaBackend, nombreCompleto } from '@/api/format';
 import type { Recordatorio } from '@/api/types';
 
-const props = defineProps<{ contactoIdInicial?: number | null }>();
-const emit = defineEmits<{ creado: [recordatorio: Recordatorio]; cerrar: [] }>();
+/** Con un recordatorio, el diálogo sirve para editarlo; sin él, para programar uno nuevo */
+const props = defineProps<{ contactoIdInicial?: number | null; recordatorio?: Recordatorio }>();
+const emit = defineEmits<{ creado: [recordatorio: Recordatorio]; guardado: [recordatorio: Recordatorio]; cerrar: [] }>();
 
 // Por defecto, mañana a las 9:00
 const manana = new Date();
 manana.setDate(manana.getDate() + 1);
 manana.setHours(9, 0, 0, 0);
 
-const contactoID = ref<number>(props.contactoIdInicial ?? 0);
-const titulo = ref('');
-const descripcion = ref('');
-const venceEn = ref(aInputFecha(fechaBackend(manana)));
-const recurrencia = ref<number | null>(null);
+const original = props.recordatorio;
+const contactoID = ref<number>(original?.contactoID ?? props.contactoIdInicial ?? 0);
+const titulo = ref(original?.titulo ?? '');
+const descripcion = ref(original?.descripcion ?? '');
+const venceEn = ref(aInputFecha(original?.venceEnFecha ?? fechaBackend(manana)));
+const recurrencia = ref<number | null>(original?.recurrenciaDias || null);
 const guardando = ref(false);
 const error = ref<string | null>(null);
 
@@ -30,19 +32,34 @@ async function guardar() {
   if (!titulo.value.trim() || !venceEn.value || guardando.value) return;
   guardando.value = true;
   error.value = null;
+  const datos = {
+    contactoID: contactoID.value || null,
+    titulo: titulo.value.trim(),
+    descripcion: descripcion.value.trim() || null,
+    venceEn: desdeInputFecha(venceEn.value)!,
+    recurrenciaDias: recurrencia.value || null,
+  };
   try {
-    const recordatorio = await api.crearRecordatorio({
-      contactoID: contactoID.value || null,
-      titulo: titulo.value.trim(),
-      descripcion: descripcion.value.trim() || null,
-      venceEn: desdeInputFecha(venceEn.value)!,
-      recurrenciaDias: recurrencia.value || null,
-    });
-    store.recordatorios.push(recordatorio);
-    store.recordatorios.sort((a, b) => a.venceEnFecha.localeCompare(b.venceEnFecha));
-    emit('creado', recordatorio);
+    if (original) {
+      const recordatorio = await api.actualizarRecordatorio({
+        ...original,
+        contactoID: datos.contactoID ?? 0,
+        titulo: datos.titulo,
+        descripcion: datos.descripcion,
+        venceEnFecha: datos.venceEn,
+        recurrenciaDias: datos.recurrenciaDias ?? 0,
+      });
+      reemplazar(store.recordatorios, recordatorio);
+      store.recordatorios.sort((a, b) => a.venceEnFecha.localeCompare(b.venceEnFecha));
+      emit('guardado', recordatorio);
+    } else {
+      const recordatorio = await api.crearRecordatorio(datos);
+      store.recordatorios.push(recordatorio);
+      store.recordatorios.sort((a, b) => a.venceEnFecha.localeCompare(b.venceEnFecha));
+      emit('creado', recordatorio);
+    }
   } catch (e) {
-    error.value = mensajeError(e);
+    error.value = original ? mensajeEdicion(e) : mensajeError(e);
   } finally {
     guardando.value = false;
   }
@@ -54,7 +71,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
 </script>
 
 <template>
-  <ModalBase titulo="Programar recordatorio" @cerrar="emit('cerrar')">
+  <ModalBase :titulo="original ? 'Editar recordatorio' : 'Programar recordatorio'" @cerrar="emit('cerrar')">
     <form class="flex flex-col gap-4" @submit.prevent="guardar">
       <label class="flex flex-col gap-1.5">
         <span :class="etiqueta">Título *</span>
@@ -94,10 +111,10 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         </button>
         <button
           type="submit"
-          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
+          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!titulo.trim() || !venceEn || guardando"
         >
-          {{ guardando ? 'Guardando…' : 'Programar' }}
+          {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Programar' }}
         </button>
       </div>
     </form>

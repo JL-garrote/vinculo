@@ -65,6 +65,12 @@ export async function borrarNota(id: number) {
   store.notas = store.notas.filter((n) => n.id !== id);
 }
 
+/** Sustituye en la lista el registro con el mismo id (tras editarlo); si no está, no hace nada */
+export function reemplazar<T extends { id: number }>(lista: T[], nuevo: T) {
+  const i = lista.findIndex((x) => x.id === nuevo.id);
+  if (i !== -1) lista[i] = nuevo;
+}
+
 export function circuloDe(contacto: Contacto): Circulo | undefined {
   return store.circulos.find((c) => c.id === contacto.circuloID);
 }

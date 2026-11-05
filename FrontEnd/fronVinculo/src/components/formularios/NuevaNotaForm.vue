@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { api, mensajeError } from '@/api/vinculo';
-import { store } from '@/api/store';
+import { api, mensajeEdicion, mensajeError } from '@/api/vinculo';
+import { reemplazar, store } from '@/api/store';
 import { tiposNota } from '@/api/format';
-import type { TipoNota } from '@/api/types';
+import type { Nota, TipoNota } from '@/api/types';
 
-const props = defineProps<{ contactoId: number }>();
+/** Con una nota, el formulario sirve para editarla; sin ella, para crear una nueva */
+const props = defineProps<{ contactoId: number; nota?: Nota }>();
 const emit = defineEmits<{ creada: []; cancelar: [] }>();
 
-const tipo = ref<TipoNota>('general');
-const titulo = ref('');
-const contenido = ref('');
-const fijada = ref(false);
+const original = props.nota;
+const tipo = ref<TipoNota>(original?.tipo ?? 'general');
+const titulo = ref(original?.titulo ?? '');
+const contenido = ref(original?.contenido ?? '');
+const fijada = ref(!!original?.fijada);
 const guardando = ref(false);
 const error = ref<string | null>(null);
 
@@ -19,18 +21,31 @@ async function guardar() {
   if (!contenido.value.trim() || guardando.value) return;
   guardando.value = true;
   error.value = null;
+  const datos = {
+    contactoID: original?.contactoID ?? props.contactoId,
+    tipo: tipo.value,
+    titulo: titulo.value.trim() || null,
+    contenido: contenido.value.trim(),
+    fijada: fijada.value,
+  };
   try {
-    const nota = await api.crearNota({
-      contactoID: props.contactoId,
-      tipo: tipo.value,
-      titulo: titulo.value.trim() || null,
-      contenido: contenido.value.trim(),
-      fijada: fijada.value,
-    });
-    store.notas.push(nota);
+    if (original) {
+      reemplazar(
+        store.notas,
+        await api.actualizarNota({
+          ...original,
+          tipo: datos.tipo,
+          titulo: datos.titulo,
+          contenido: datos.contenido,
+          fijada: datos.fijada ? 1 : 0,
+        }),
+      );
+    } else {
+      store.notas.push(await api.crearNota(datos));
+    }
     emit('creada');
   } catch (e) {
-    error.value = mensajeError(e);
+    error.value = original ? mensajeEdicion(e) : mensajeError(e);
   } finally {
     guardando.value = false;
   }
@@ -72,10 +87,10 @@ const campo =
         </button>
         <button
           type="submit"
-          class="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+          class="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md disabled:opacity-50"
           :disabled="!contenido.trim() || guardando"
         >
-          {{ guardando ? 'Guardando…' : 'Guardar nota' }}
+          {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Guardar nota' }}
         </button>
       </div>
     </div>

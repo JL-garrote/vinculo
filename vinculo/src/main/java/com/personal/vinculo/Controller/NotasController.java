@@ -4,12 +4,7 @@ import com.personal.vinculo.Models.Notas;
 import com.personal.vinculo.Service.NotasService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +30,9 @@ public class NotasController {
         notas.borrarContacto(id);
     }
 
-    @GetMapping("/actualizar/{id}")
-    public void actualizar(@PathVariable int id) {
-        notas.actualizar(id);
+    @PutMapping("/actualizar/{id}")
+    public void actualizar(@PathVariable int id,@RequestBody Notas nota) {
+        notas.actualizar(id,nota);
     }
 
     @GetMapping("todas")

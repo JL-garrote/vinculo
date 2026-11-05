@@ -54,7 +54,7 @@
   --color-on-surface-variant: #464554;
   --color-inverse-surface: #213145;
   --color-inverse-on-surface: #eaf1ff;
-  --color-outline: #777586;
+  --color-outline: #6c6a7a; /* ≥4,5:1 como texto sobre todas las superficies claras */
   --color-outline-variant: #c7c4d7;
   --color-scrim: rgb(11 28 48 / 0.4);
 
@@ -193,6 +193,12 @@
 
   body {
     overflow-x: hidden;
+  }
+
+  /* Foco de teclado visible y con el color de la marca en toda la app (≥3:1 en los dos temas) */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   body {

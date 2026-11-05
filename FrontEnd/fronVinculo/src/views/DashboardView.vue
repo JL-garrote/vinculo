@@ -10,8 +10,11 @@ import {
   formatoFecha,
   nombreCompleto,
   parseFecha,
+  textoCirculo,
   textoDias,
   tiposNota,
+  numero,
+  plural,
 } from '@/api/format';
 
 defineEmits<{ abrir: [id: number] }>();
@@ -60,18 +63,18 @@ const kpis = computed<Kpi[]>(() => {
   return [
     {
       label: 'Contactos Totales',
-      value: String(total.value),
-      detail: `en ${circulosUsados} círculos`,
+      value: numero(total.value),
+      detail: `en ${plural(circulosUsados, 'círculo', 'círculos')}`,
       icon: 'contacts',
       iconClass: 'bg-surface-container text-on-surface-variant',
-      badge: `+${esteMes} este mes`,
+      badge: `+${numero(esteMes)} este mes`,
       badgeClass: 'px-2 py-0.5 rounded-full bg-secondary/10 text-secondary',
       progress: pct(conCirculo),
       progressClass: 'bg-primary-container',
     },
     {
       label: 'Contactos Prioritarios',
-      value: String(prioritarios),
+      value: numero(prioritarios),
       valueClass: 'text-secondary',
       detail: 'marcados como clave',
       icon: 'favorite',
@@ -83,8 +86,8 @@ const kpis = computed<Kpi[]>(() => {
     },
     {
       label: 'Próximos Pasos',
-      value: String(conPaso.value.length),
-      detail: `${vencidos.value.length} vencidos`,
+      value: numero(conPaso.value.length),
+      detail: plural(vencidos.value.length, 'vencido', 'vencidos'),
       detailClass: vencidos.value.length ? 'text-tertiary' : undefined,
       icon: 'schedule',
       iconClass: 'bg-tertiary-fixed text-tertiary-container',
@@ -158,7 +161,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
               class="w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse"
               :class="vencidos.length ? 'bg-error' : 'bg-secondary'"
             ></span>
-            {{ vencidos.length ? `${vencidos.length} pasos vencidos` : 'Ritmo Relacional al día' }}
+            {{ vencidos.length ? plural(vencidos.length, 'paso vencido', 'pasos vencidos') : 'Ritmo relacional al día' }}
           </span>
           <span class="text-on-surface-variant font-label-sm text-label-sm first-letter:uppercase">{{ fechaHoy }}</span>
         </div>
@@ -166,26 +169,25 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           ¡{{ saludo }}{{ nombrePerfil ? `, ${nombrePerfil}` : '' }}!
         </h1>
         <p class="text-body-md font-body-md text-on-surface-variant">
-          Tienes <span class="text-primary-container font-semibold">{{ atencion.length }} relaciones</span> que requieren
-          atención esta semana y <span class="text-on-surface font-semibold">{{ conPaso.length }} próximos pasos</span> en tu
-          radar.
+          Tienes
+          <span class="text-primary font-semibold">
+            {{ plural(atencion.length, 'relación', 'relaciones') }}
+          </span>
+          {{ atencion.length === 1 ? 'que requiere' : 'que requieren' }} atención esta semana y
+          <span class="text-on-surface font-semibold">
+            {{ plural(conPaso.length, 'próximo paso', 'próximos pasos') }}
+          </span>
+          en tu radar.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          class="flex items-center gap-2 px-3.5 py-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg text-label-lg font-label-lg transition-all shadow-sm"
-        >
-          <span class="material-symbols-outlined text-base text-primary-container">sync</span>
-          <span>Sincronizar Calendario</span>
-        </button>
-        <button
-          type="button"
-          class="flex items-center gap-2 px-4 py-2 bg-primary-container hover:bg-primary text-on-primary rounded-lg text-label-lg font-label-lg transition-all shadow-sm"
+          class="flex items-center gap-2 px-4 py-2 bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary rounded-lg text-label-lg font-label-lg transition-all shadow-sm"
           @click="programando = true"
         >
-          <span class="material-symbols-outlined text-base">alarm_add</span>
-          <span>Programar Recordatorio</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-base">alarm_add</span>
+          <span>Programar recordatorio</span>
         </button>
       </div>
     </div>
@@ -223,10 +225,10 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
       <div class="lg:col-span-7 flex flex-col gap-5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary-container text-xl">history_edu</span>
-            <h2 class="text-headline-sm font-headline-sm text-on-surface">Notas Recientes</h2>
+            <span aria-hidden="true" class="material-symbols-outlined text-primary-container text-xl">history_edu</span>
+            <h2 class="text-headline-sm font-headline-sm text-on-surface">Notas recientes</h2>
           </div>
-          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ store.notas.length }} en total</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ numero(store.notas.length) }} en total</span>
         </div>
 
         <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
@@ -236,7 +238,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
           <div v-for="(item, i) in actividad" :key="item.nota.id" class="flex gap-4 relative">
             <div class="flex flex-col items-center">
               <div class="w-10 h-10 rounded-full flex items-center justify-center z-10" :class="item.tipo.clase">
-                <span class="material-symbols-outlined text-lg">{{ item.tipo.icon }}</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-lg">{{ item.tipo.icon }}</span>
               </div>
               <div v-if="i < actividad.length - 1" class="w-0.5 bg-surface-container-high h-full my-1"></div>
             </div>
@@ -259,7 +261,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
                 {{ item.nota.contenido }}
               </p>
               <div v-if="item.nota.fijada" class="flex items-center gap-1 text-label-sm font-label-sm text-tertiary-container">
-                <span class="material-symbols-outlined text-xs">push_pin</span> Fijada
+                <span aria-hidden="true" class="material-symbols-outlined text-xs">push_pin</span> Fijada
               </div>
             </div>
           </div>
@@ -270,10 +272,10 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
       <div class="lg:col-span-5 flex flex-col gap-5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary-container text-xl">alarm</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-primary-container text-xl">alarm</span>
             <h2 class="text-headline-sm font-headline-sm text-on-surface">Recordatorios</h2>
           </div>
-          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ store.recordatorios.length }} pendientes</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">{{ plural(store.recordatorios.length, 'pendiente', 'pendientes') }}</span>
         </div>
         <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-2">
           <p v-if="!recordatorios.length" class="p-2 font-body-sm text-body-sm text-on-surface-variant">
@@ -285,7 +287,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
             class="flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-surface-container-low transition-colors"
           >
             <div class="flex items-center gap-3 min-w-0">
-              <span class="material-symbols-outlined text-base text-primary">schedule</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-base text-primary">schedule</span>
               <div class="flex flex-col min-w-0">
                 <span class="font-label-lg text-label-lg text-on-surface truncate">{{ r.titulo }}</span>
                 <button
@@ -311,7 +313,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
 
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary text-xl">hub</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-secondary text-xl">hub</span>
             <h2 class="text-headline-sm font-headline-sm text-on-surface">Círculos de tu Red</h2>
           </div>
         </div>
@@ -324,8 +326,8 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
               </span>
               <span class="text-headline-md font-headline-md text-on-surface mt-0.5">{{ conCirculo }}% en círculos</span>
               <span class="text-body-sm font-body-sm text-secondary flex items-center gap-1 mt-1">
-                <span class="material-symbols-outlined text-sm">verified</span>
-                {{ total }} contactos en {{ store.circulos.length }} círculos
+                <span aria-hidden="true" class="material-symbols-outlined text-sm">verified</span>
+                {{ plural(total, 'contacto', 'contactos') }} en {{ plural(store.circulos.length, 'círculo', 'círculos') }}
               </span>
             </div>
             <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
@@ -363,7 +365,7 @@ const conCirculo = computed(() => pct(store.contactos.filter((c) => c.circuloID 
                   <span class="text-on-surface-variant text-label-sm font-label-sm">({{ circulo.count }})</span>
                 </div>
                 <div class="flex items-center gap-2 font-label-sm text-label-sm">
-                  <span class="font-semibold" :style="{ color: circulo.color }">{{ circulo.percent }}%</span>
+                  <span class="font-semibold" :style="{ color: textoCirculo(circulo.color) }">{{ circulo.percent }}%</span>
                   <span class="text-on-surface-variant">· cada {{ circulo.defectoDias }} d</span>
                 </div>
               </div>

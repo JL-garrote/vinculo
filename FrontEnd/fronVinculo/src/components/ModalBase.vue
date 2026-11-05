@@ -16,7 +16,7 @@ const emit = defineEmits<{ cerrar: [] }>();
       <div class="flex items-center justify-between">
         <h2 class="font-headline-sm text-headline-sm text-on-surface">{{ titulo }}</h2>
         <button type="button" class="p-1 text-on-surface-variant hover:text-on-surface" title="Cerrar" @click="emit('cerrar')">
-          <span class="material-symbols-outlined">close</span>
+          <span aria-hidden="true" class="material-symbols-outlined">close</span>
         </button>
       </div>
       <slot />

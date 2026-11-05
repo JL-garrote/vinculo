@@ -1,34 +1,49 @@
 <script setup lang="ts">
-interface NavItem {
-  path: string;
-  label: string;
-  icon: string;
-}
+import { nextTick, ref, watch } from 'vue';
+import { hrefDe, RUTAS, type Seccion } from '@/api/rutas';
 
-const mainNav: NavItem[] = [
-  { path: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { path: 'contactos', label: 'Contactos', icon: 'group' },
-  { path: 'ficha-contacto', label: 'Ficha Contacto', icon: 'account_circle' },
-  { path: 'pipeline-relacional', label: 'Pipeline Relacional', icon: 'view_kanban' },
+const mainNav: { seccion: Seccion; label: string; icon: string }[] = [
+  { seccion: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { seccion: 'contactos', label: 'Contactos', icon: 'group' },
+  { seccion: 'ficha-contacto', label: RUTAS['ficha-contacto'].titulo, icon: 'account_circle' },
+  { seccion: 'pipeline-relacional', label: RUTAS['pipeline-relacional'].titulo, icon: 'view_kanban' },
 ];
 
-// Sección activa, controlada desde App.vue con v-model
-const active = defineModel<string>({ default: 'dashboard' });
 // abierto: solo afecta a pantallas pequeñas, donde el menú se despliega encima del contenido
-defineProps<{ abierto?: boolean }>();
-defineEmits<{ cerrar: [] }>();
+const props = defineProps<{ activa: Seccion; abierto?: boolean }>();
+const emit = defineEmits<{ cerrar: [] }>();
+
+// Al abrir el menú en móvil el foco entra en él; al cerrarlo vuelve al botón que lo abrió
+const panel = ref<HTMLElement | null>(null);
+let origen: HTMLElement | null = null;
+watch(
+  () => props.abierto,
+  async (abierto) => {
+    if (abierto) {
+      origen = document.activeElement as HTMLElement | null;
+      await nextTick();
+      panel.value?.querySelector<HTMLElement>('button, a')?.focus();
+    } else origen?.focus();
+  },
+);
 </script>
 
 <template>
-  <div v-if="abierto" class="fixed inset-0 z-50 bg-scrim lg:hidden" @click="$emit('cerrar')"></div>
+  <div v-if="abierto" class="fixed inset-0 z-50 bg-scrim lg:hidden" aria-hidden="true" @click="emit('cerrar')"></div>
   <aside
-    class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between py-6 px-4 overflow-y-auto transition-transform duration-200 lg:translate-x-0"
-    :class="abierto ? 'translate-x-0' : '-translate-x-full'"
+    ref="panel"
+    aria-label="Menú principal"
+    class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col py-6 px-4 overflow-y-auto duration-200 lg:translate-x-0 lg:visible motion-reduce:transition-none"
+    :class="
+      /* Al abrir se hace visible al instante (y puede recibir el foco); al cerrar se oculta al acabar de deslizarse */
+      abierto ? 'translate-x-0 visible transition-transform' : '-translate-x-full invisible transition-[transform,visibility]'
+    "
+    @keydown.esc="emit('cerrar')"
   >
     <div class="flex flex-col gap-8">
       <div class="flex items-center gap-3 px-2">
-        <img alt="Vínculo" class="h-7 w-auto dark:hidden" src="/logo.svg" />
-        <img alt="Vínculo" class="h-7 w-auto hidden dark:block" src="/logo-oscuro.svg" />
+        <img alt="" class="h-7 w-auto dark:hidden" src="/logo.svg" />
+        <img alt="" class="h-7 w-auto hidden dark:block" src="/logo-oscuro.svg" />
         <div class="flex flex-col flex-1">
           <span class="font-headline-sm text-headline-sm text-on-surface leading-none">Vínculo</span>
           <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase mt-0.5">
@@ -37,49 +52,32 @@ defineEmits<{ cerrar: [] }>();
         </div>
         <button
           type="button"
-          title="Cerrar menú"
-          class="p-1.5 -mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container-high lg:hidden"
-          @click="$emit('cerrar')"
+          aria-label="Cerrar el menú"
+          class="p-2.5 -mr-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high lg:hidden"
+          @click="emit('cerrar')"
         >
-          <span class="material-symbols-outlined text-xl">close</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-xl">close</span>
         </button>
       </div>
 
-      <nav class="flex flex-col gap-1">
+      <nav aria-label="Secciones" class="flex flex-col gap-1">
         <a
           v-for="item in mainNav"
-          :key="item.path"
-          href="#"
-          :aria-current="active === item.path ? 'page' : undefined"
+          :key="item.seccion"
+          :href="hrefDe(item.seccion)"
+          :aria-current="activa === item.seccion ? 'page' : undefined"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg transition-colors"
           :class="
-            active === item.path
+            activa === item.seccion
               ? 'bg-primary-container text-on-primary shadow-sm'
               : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
           "
-          @click.prevent="active = item.path; $emit('cerrar')"
+          @click="emit('cerrar')"
         >
-          <span class="material-symbols-outlined text-lg">{{ item.icon }}</span>
+          <span aria-hidden="true" class="material-symbols-outlined text-lg">{{ item.icon }}</span>
           <span>{{ item.label }}</span>
         </a>
       </nav>
-    </div>
-
-    <div class="flex flex-col gap-1 border-t border-surface-container-high pt-4">
-      <a
-        href="#"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
-      >
-        <span class="material-symbols-outlined text-lg">settings</span>
-        <span>Ajustes</span>
-      </a>
-      <a
-        href="#"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-error hover:bg-error-container hover:text-on-error-container transition-colors"
-      >
-        <span class="material-symbols-outlined text-lg">logout</span>
-        <span>Cerrar sesión</span>
-      </a>
     </div>
   </aside>
 </template>

@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Interacciones;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +32,24 @@ public class InteraccionService {
         return jdbc.query(sql, this::rowInteraccion);
     }
 
-    public void actualizar(int id) {
+    public void actualizar(int id,Interacciones interaccion) {
         try {
-            String sql = "UPDATE * FROM interacciones WHERE id = ?";
-            jdbc.update(sql,id);
-            System.out.println("[circulo actualizado correctamente]");
+            String sql = "UPDATE interacciones SET contacto_id = ?, contacto_relacionado_id = ?, tipo = ?, titulo = ?, "
+                    + "fecha = ?, lugar = ?, resumen = ?, temas = ?, es_borrador = ? WHERE id = ?";
+            jdbc.update(sql,interaccion.getContactoID(),InsertHelper.idONull(interaccion.getContactoRelacionadoID()),interaccion.getTipo(),interaccion.getTitulo(),interaccion.getFecha(),interaccion.getLugar(),interaccion.getResumen(),interaccion.getTemas(),interaccion.getBorrador(),id);
+            System.out.println("[interaccion actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM interacciones WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Interaccion borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
         }
     }
 

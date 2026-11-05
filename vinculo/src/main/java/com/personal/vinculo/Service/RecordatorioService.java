@@ -1,6 +1,7 @@
 package com.personal.vinculo.Service;
 
 import com.personal.vinculo.Models.Recordatorios;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +33,24 @@ public class RecordatorioService {
         return jdbc.query(sql, this::rowRecordatorio, contactoID);
     }
 
-    public void actualizar(int id) {
+    public void actualizar(int id,Recordatorios recordatorio) {
         try {
-            String sql = "UPDATE * FROM recordatorios WHERE id = ?";
-            jdbc.update(sql,id);
-            System.out.println("[circulo actualizado correctamente]");
+            String sql = "UPDATE recordatorios SET contacto_id = ?, titulo = ?, descripcion = ?, vence_en = ?, "
+                    + "recurrencia_dias = ? WHERE id = ?";
+            jdbc.update(sql,InsertHelper.idONull(recordatorio.getContactoID()),recordatorio.getTitulo(),recordatorio.getDescripcion(),recordatorio.getVenceEnFecha(),InsertHelper.positivoONull(recordatorio.getRecurrenciaDias()),id);
+            System.out.println("[recordatorio actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
+        }
+    }
+
+    public void borrarContacto(int id) {
+        try {
+            String sql = "DELETE FROM recordatorios WHERE id = ?";
+            jdbc.update(sql, id);
+            System.out.println("[Recordatorio borrado correctamente]");
+        } catch (DataAccessException e) {
+            System.out.println("[Error al borrar contacto]" + e.getMessage());
         }
     }
 

@@ -6,6 +6,7 @@ import InteractionLogger, {
 } from '@/components/ficha/InteractionLogger.vue';
 import AvatarContacto from '@/components/AvatarContacto.vue';
 import NuevaNotaForm from '@/components/formularios/NuevaNotaForm.vue';
+import NuevoContactoDialog from '@/components/formularios/NuevoContactoDialog.vue';
 import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
 import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
 import {
@@ -20,7 +21,7 @@ import {
 import { api, mensajeError } from '@/api/vinculo';
 import {
   canales,
-  conAlfa,
+  estiloCirculo,
   diasHasta,
   estadoProximoPaso,
   estiloEstado,
@@ -187,6 +188,21 @@ function recordatorioCreado(r: Recordatorio) {
 
 const logger = ref<InstanceType<typeof InteractionLogger> | null>(null);
 
+// ---------- Ediciones ----------
+
+const editandoContacto = ref(false);
+const notaEditando = ref<Nota | null>(null);
+const recordatorioEditando = ref<Recordatorio | null>(null);
+
+function recordatorioGuardado(r: Recordatorio) {
+  recordatorioEditando.value = null;
+  // Si se ha pasado a otro contacto, deja de verse en esta ficha
+  recordatorios.value =
+    r.contactoID === contacto.value?.id
+      ? recordatorios.value.map((x) => (x.id === r.id ? r : x))
+      : recordatorios.value.filter((x) => x.id !== r.id);
+}
+
 // ---------- Borrados ----------
 
 const borrandoContacto = ref(false);
@@ -229,9 +245,11 @@ function contactoBorrado() {
             <span
               v-if="contacto.prioritario"
               class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm"
+              role="img"
+              aria-label="Contacto prioritario"
               title="Contacto prioritario"
             >
-              <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
             </span>
           </div>
 
@@ -247,7 +265,7 @@ function contactoBorrado() {
               <span
                 v-if="circulo"
                 class="px-2.5 py-0.5 rounded-full font-label-sm text-label-sm"
-                :style="{ backgroundColor: conAlfa(circulo.color, 0.15), color: circulo.color }"
+                :style="estiloCirculo(circulo.color)"
               >
                 {{ circulo.nombre }}
               </span>
@@ -255,7 +273,7 @@ function contactoBorrado() {
                 v-if="contacto.prioritario"
                 class="px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant flex items-center gap-1"
               >
-                <span class="material-symbols-outlined text-xs">grade</span> Prioritario
+                <span aria-hidden="true" class="material-symbols-outlined text-xs">grade</span> Prioritario
               </span>
             </div>
             <p
@@ -265,7 +283,7 @@ function contactoBorrado() {
               <span v-if="puesto">{{ puesto }}</span>
               <span v-if="puesto && ubicacion" class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
               <span v-if="ubicacion" class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">location_on</span> {{ ubicacion }}
+                <span aria-hidden="true" class="material-symbols-outlined text-sm">location_on</span> {{ ubicacion }}
               </span>
             </p>
             <div class="flex flex-wrap items-center gap-3 mt-1">
@@ -274,7 +292,7 @@ function contactoBorrado() {
                 :href="`mailto:${contacto.email}`"
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm"
               >
-                <span class="material-symbols-outlined text-sm text-primary">mail</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-sm text-primary">mail</span>
                 <span class="truncate">{{ contacto.email }}</span>
               </a>
               <a
@@ -282,7 +300,7 @@ function contactoBorrado() {
                 :href="`tel:${contacto.telefono.replace(/[^\d+]/g, '')}`"
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm"
               >
-                <span class="material-symbols-outlined text-sm text-secondary">call</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-sm text-secondary">call</span>
                 <span>{{ contacto.telefono }}</span>
               </a>
               <a
@@ -293,14 +311,14 @@ function contactoBorrado() {
                 title="LinkedIn"
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm"
               >
-                <span class="material-symbols-outlined text-sm">link</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-sm">link</span>
                 <span>LinkedIn</span>
               </a>
               <span
                 v-if="canal"
                 class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm"
               >
-                <span class="material-symbols-outlined text-sm">{{ canal.icon }}</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-sm">{{ canal.icon }}</span>
                 Prefiere: {{ canal.label }}
               </span>
             </div>
@@ -310,10 +328,10 @@ function contactoBorrado() {
         <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
           <button
             type="button"
-            class="flex items-center gap-2 px-4 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-primary transition-all shadow-sm"
+            class="flex items-center gap-2 px-4 py-2.5 bg-primary-container text-on-primary rounded-lg font-label-lg text-label-lg hover:bg-primary dark:hover:bg-primary-fixed-dim transition-all shadow-sm"
             @click="logger?.focus()"
           >
-            <span class="material-symbols-outlined text-base">rate_review</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-base">rate_review</span>
             <span>Registrar Interacción</span>
           </button>
           <button
@@ -321,8 +339,16 @@ function contactoBorrado() {
             class="flex items-center gap-2 px-3.5 py-2.5 bg-surface-container text-on-surface rounded-lg font-label-lg text-label-lg hover:bg-surface-container-high transition-colors"
             @click="programando = true"
           >
-            <span class="material-symbols-outlined text-base">alarm</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-base">alarm</span>
             <span>Programar Toque</span>
+          </button>
+          <button
+            type="button"
+            class="p-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+            title="Editar contacto"
+            @click="editandoContacto = true"
+          >
+            <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
           </button>
           <button
             type="button"
@@ -330,7 +356,7 @@ function contactoBorrado() {
             title="Eliminar contacto"
             @click="borrandoContacto = true"
           >
-            <span class="material-symbols-outlined text-base">delete</span>
+            <span aria-hidden="true" class="material-symbols-outlined text-base">delete</span>
           </button>
         </div>
       </div>
@@ -339,7 +365,7 @@ function contactoBorrado() {
       <div class="w-full bg-surface-container-low rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 mt-2">
         <div class="flex items-center gap-4 w-full md:w-auto">
           <div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined" :class="estado.texto">event</span>
+            <span aria-hidden="true" class="material-symbols-outlined" :class="estado.texto">event</span>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -355,7 +381,7 @@ function contactoBorrado() {
           <div class="flex flex-col text-left md:text-right">
             <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Cadencia Deseada</span>
             <span class="font-label-lg text-label-lg text-on-surface mt-0.5 flex items-center gap-1.5 md:justify-end">
-              <span class="material-symbols-outlined text-sm text-primary">autorenew</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-sm text-primary">autorenew</span>
               {{ cadencia ? `Cada ${cadencia} días` : 'Sin definir' }}
             </span>
           </div>
@@ -366,7 +392,7 @@ function contactoBorrado() {
               :class="estado.texto"
               :title="fechaPaso ? formatoFecha(fechaPaso, true) : ''"
             >
-              <span class="material-symbols-outlined text-sm">schedule</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-sm">schedule</span>
               {{ fechaPaso ? textoDias(diasHasta(fechaPaso)) : 'Sin fecha' }}
             </span>
           </div>
@@ -381,7 +407,7 @@ function contactoBorrado() {
         <!-- Contexto personal -->
         <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-5">
           <div class="flex items-center gap-2.5">
-            <span class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
+            <span aria-hidden="true" class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
               sentiment_satisfied
             </span>
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Contexto Personal</h2>
@@ -391,7 +417,7 @@ function contactoBorrado() {
           </p>
           <div v-else class="flex flex-col gap-4">
             <div v-for="item in contextoPersonal" :key="item.label" class="flex items-start gap-3">
-              <span class="material-symbols-outlined text-base text-on-surface-variant mt-0.5">{{ item.icon }}</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-base text-on-surface-variant mt-0.5">{{ item.icon }}</span>
               <div class="flex-1 flex justify-between items-center gap-3">
                 <div>
                   <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant block">
@@ -415,6 +441,7 @@ function contactoBorrado() {
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span
+                aria-hidden="true"
                 class="p-1.5 rounded-lg bg-tertiary-fixed text-tertiary material-symbols-outlined text-lg"
                 style="font-variation-settings: 'FILL' 1"
               >
@@ -444,46 +471,63 @@ function contactoBorrado() {
           <p v-if="!notas.length && !creandoNota" class="font-body-sm text-body-sm text-on-surface-variant">
             Este contacto todavía no tiene notas.
           </p>
-          <div
-            v-for="nota in notas"
-            :key="nota.id"
-            class="p-4 rounded-lg flex flex-col gap-2"
-            :class="nota.fijada ? 'bg-tertiary-fixed/30' : 'bg-surface-container-low'"
-          >
-            <div class="flex items-center justify-between gap-2">
-              <span class="flex items-center gap-1.5 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-                <span v-if="nota.fijada" class="material-symbols-outlined text-xs text-tertiary-container">push_pin</span>
-                {{ nota.titulo ?? (tiposNota[nota.tipo] ?? tiposNota.general).label }}
-              </span>
-              <div class="flex items-center gap-1">
-                <span
-                  class="px-2 py-0.5 rounded font-label-sm text-label-sm"
-                  :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
-                >
-                  {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
+          <template v-for="nota in notas" :key="nota.id">
+            <NuevaNotaForm
+              v-if="notaEditando?.id === nota.id"
+              :contacto-id="contacto.id"
+              :nota="nota"
+              @creada="notaEditando = null"
+              @cancelar="notaEditando = null"
+            />
+            <div
+              v-else
+              class="p-4 rounded-lg flex flex-col gap-2"
+              :class="nota.fijada ? 'bg-tertiary-fixed/30' : 'bg-surface-container-low'"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="flex items-center gap-1.5 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <span v-if="nota.fijada" aria-hidden="true" class="material-symbols-outlined text-xs text-tertiary-container">push_pin</span>
+                  <span v-if="nota.fijada" class="sr-only">Nota fijada:</span>
+                  {{ nota.titulo ?? (tiposNota[nota.tipo] ?? tiposNota.general).label }}
                 </span>
-                <button
-                  type="button"
-                  class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
-                  title="Borrar nota"
-                  @click="notaABorrar = nota"
-                >
-                  <span class="material-symbols-outlined text-base">delete</span>
-                </button>
+                <div class="flex items-center gap-1">
+                  <span
+                    class="px-2 py-0.5 rounded font-label-sm text-label-sm"
+                    :class="(tiposNota[nota.tipo] ?? tiposNota.general).clase"
+                  >
+                    {{ (tiposNota[nota.tipo] ?? tiposNota.general).label }}
+                  </span>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+                    title="Editar nota"
+                    @click="notaEditando = nota"
+                  >
+                    <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                    title="Borrar nota"
+                    @click="notaABorrar = nota"
+                  >
+                    <span aria-hidden="true" class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
               </div>
+              <p class="font-body-sm text-body-sm text-on-surface">{{ nota.contenido }}</p>
+              <span class="font-label-sm text-label-sm text-outline">
+                {{ parseFecha(nota.creadoEn) ? formatoFecha(parseFecha(nota.creadoEn)!) : '' }}
+              </span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface">{{ nota.contenido }}</p>
-            <span class="font-label-sm text-label-sm text-outline">
-              {{ parseFecha(nota.creadoEn) ? formatoFecha(parseFecha(nota.creadoEn)!) : '' }}
-            </span>
-          </div>
+          </template>
         </div>
 
         <!-- Recordatorios -->
         <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="p-1.5 rounded-lg bg-primary-fixed text-on-primary-fixed-variant material-symbols-outlined text-lg">alarm</span>
+              <span aria-hidden="true" class="p-1.5 rounded-lg bg-primary-fixed text-on-primary-fixed-variant material-symbols-outlined text-lg">alarm</span>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Recordatorios</h2>
               <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                 {{ recordatoriosPendientes.length }} pendientes
@@ -503,6 +547,7 @@ function contactoBorrado() {
             :class="r.estado === 'pendiente' ? 'bg-surface-container-low' : 'bg-surface-container-low/50 opacity-70'"
           >
             <span
+              aria-hidden="true"
               class="material-symbols-outlined text-base mt-0.5"
               :class="r.estado === 'pendiente' ? 'text-primary' : 'text-secondary'"
             >
@@ -521,13 +566,22 @@ function contactoBorrado() {
                 <template v-if="r.estado !== 'pendiente'"> · {{ r.estado }}</template>
               </span>
             </div>
+            <button
+              v-if="r.estado === 'pendiente'"
+              type="button"
+              class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+              title="Editar recordatorio"
+              @click="recordatorioEditando = r"
+            >
+              <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
+            </button>
           </div>
         </div>
 
         <!-- Conexiones -->
         <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-4">
           <div class="flex items-center gap-2">
-            <span class="p-1.5 rounded-lg bg-surface-container text-secondary material-symbols-outlined text-lg">hub</span>
+            <span aria-hidden="true" class="p-1.5 rounded-lg bg-surface-container text-secondary material-symbols-outlined text-lg">hub</span>
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Conexiones &amp; Intereses</h2>
           </div>
           <div class="flex flex-col gap-3">
@@ -546,7 +600,7 @@ function contactoBorrado() {
                   <span class="font-label-sm text-label-sm text-on-surface-variant">Te lo presentó</span>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-on-surface-variant text-base">arrow_forward</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-on-surface-variant text-base">arrow_forward</span>
             </button>
             <button
               v-for="persona in haPresentado"
@@ -564,7 +618,7 @@ function contactoBorrado() {
                   <span class="font-label-sm text-label-sm text-on-surface-variant">Presentado por este contacto</span>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-on-surface-variant text-base">arrow_forward</span>
+              <span aria-hidden="true" class="material-symbols-outlined text-on-surface-variant text-base">arrow_forward</span>
             </button>
             <p v-if="!presentadoPor && !haPresentado.length" class="font-body-sm text-body-sm text-on-surface-variant">
               Sin presentaciones registradas.
@@ -589,7 +643,7 @@ function contactoBorrado() {
         <!-- Historial -->
         <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
           <div class="flex items-center gap-2.5">
-            <span class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
+            <span aria-hidden="true" class="p-2 rounded-lg bg-surface-container text-primary material-symbols-outlined text-lg">
               history_toggle_off
             </span>
             <div>
@@ -617,7 +671,7 @@ function contactoBorrado() {
                 class="absolute -left-6 top-1 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface-container-lowest"
                 :class="entry.tipoInfo.clase"
               >
-                <span class="material-symbols-outlined text-xs">{{ entry.tipoInfo.icon }}</span>
+                <span aria-hidden="true" class="material-symbols-outlined text-xs">{{ entry.tipoInfo.icon }}</span>
               </div>
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <div class="flex items-center gap-2">
@@ -636,7 +690,7 @@ function contactoBorrado() {
               </div>
               <div class="bg-surface-container-low rounded-lg flex flex-col gap-2 p-4">
                 <p v-if="entry.lugar" class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
-                  <span class="material-symbols-outlined text-xs">location_on</span> {{ entry.lugar }}
+                  <span aria-hidden="true" class="material-symbols-outlined text-xs">location_on</span> {{ entry.lugar }}
                 </p>
                 <p class="font-body-md text-body-md text-on-surface">{{ entry.resumen ?? 'Sin resumen.' }}</p>
                 <div v-if="entry.tags.length" class="flex flex-wrap items-center gap-1.5 pt-1">
@@ -660,6 +714,18 @@ function contactoBorrado() {
       :contacto-id-inicial="contacto.id"
       @creado="recordatorioCreado"
       @cerrar="programando = false"
+    />
+    <RecordatorioDialog
+      v-if="recordatorioEditando"
+      :recordatorio="recordatorioEditando"
+      @guardado="recordatorioGuardado"
+      @cerrar="recordatorioEditando = null"
+    />
+    <NuevoContactoDialog
+      v-if="editandoContacto"
+      :contacto="contacto"
+      @guardado="editandoContacto = false"
+      @cerrar="editandoContacto = false"
     />
 
     <ConfirmarBorradoDialog
