@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import type { PipelineContacto } from '@/api/types';
 import { circuloDe, contactoPorId } from '@/api/store';
-import { conAlfa, diasHasta, formatoFecha, nombreCompleto, parseFecha, prioridades, textoDias } from '@/api/format';
+import { diasHasta, estiloCirculo, formatoFecha, nombreCompleto, parseFecha, prioridades, textoDias } from '@/api/format';
 import AvatarContacto from '../AvatarContacto.vue';
 
 const props = defineProps<{ entrada: PipelineContacto }>();
@@ -34,8 +34,13 @@ const diasEnEtapa = computed(() => {
 <template>
   <div
     class="p-4 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group flex flex-col gap-3"
-    :class="{ 'border-l-4 border-secondary': entrada.etapa === 'aliado' }"
+    :class="{ 'ring-1 ring-secondary/50': entrada.etapa === 'aliado' }"
+    role="button"
+    tabindex="0"
+    :aria-label="`Editar la entrada de ${nombre} en el pipeline`"
     @click="$emit('editar', entrada)"
+    @keydown.enter.self.prevent="$emit('editar', entrada)"
+    @keydown.space.self.prevent="$emit('editar', entrada)"
   >
     <!-- Cabecera -->
     <div class="flex items-start justify-between gap-3">
@@ -57,7 +62,7 @@ const diasEnEtapa = computed(() => {
     <div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col gap-1.5">
       <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 font-label-sm text-label-sm">
         <span class="text-on-surface-variant flex items-center gap-1">
-          <span class="material-symbols-outlined text-xs text-primary">flag</span> Siguiente acción
+          <span aria-hidden="true" class="material-symbols-outlined text-xs text-primary">flag</span> Siguiente acción
         </span>
         <span
           v-if="fechaAccion && diasAccion !== null"
@@ -78,13 +83,13 @@ const diasEnEtapa = computed(() => {
       <span
         v-if="circulo"
         class="px-2 py-0.5 rounded-full font-label-sm text-label-sm"
-        :style="{ backgroundColor: conAlfa(circulo.color, 0.15), color: circulo.color }"
+        :style="estiloCirculo(circulo.color)"
       >
         {{ circulo.nombre }}
       </span>
       <span v-else></span>
       <span class="font-label-sm text-label-sm flex items-center gap-1" title="Tiempo en esta etapa">
-        <span class="material-symbols-outlined text-xs">hourglass_top</span>
+        <span aria-hidden="true" class="material-symbols-outlined text-xs">hourglass_top</span>
         {{ diasEnEtapa === 0 ? 'Hoy' : `${diasEnEtapa} d en etapa` }}
       </span>
     </div>
