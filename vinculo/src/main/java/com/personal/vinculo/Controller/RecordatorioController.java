@@ -28,6 +28,11 @@ public class RecordatorioController {
         return recordatorios.deContacto(contactoID);
     }
 
+    @GetMapping("/borrar/{id}")
+    public void borrado(@PathVariable int id) {
+        recordatorios.borrarContacto(id);
+    }
+
     @PutMapping("/actualizar/{id}")
     public void actualizar(@PathVariable int id,@RequestBody Recordatorios record) {
         recordatorios.actualizar(id,record);
