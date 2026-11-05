@@ -5,7 +5,7 @@ import NuevoCirculoDialog from '@/components/formularios/NuevoCirculoDialog.vue'
 import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
 import ImportarContactosDialog from '@/components/formularios/ImportarContactosDialog.vue';
 import { borrarCirculo, store } from '@/api/store';
-import { estadoProximoPaso, estiloEstado, lista, nombreCompleto, parseFecha, type EstadoProximoPaso } from '@/api/format';
+import { estadoProximoPaso, estiloEstado, lista, nombreCompleto, numero, parseFecha, plural, type EstadoProximoPaso } from '@/api/format';
 
 defineEmits<{ abrir: [id: number]; nuevoContacto: [] }>();
 
@@ -15,8 +15,6 @@ const editandoCirculo = ref(false);
 const importando = ref(false);
 
 const total = computed(() => store.contactos.length);
-const numero = (n: number) => n.toLocaleString('es-ES');
-const plural = (n: number, uno: string, varios: string) => `${numero(n)} ${n === 1 ? uno : varios}`;
 const contarEstado = (estado: EstadoProximoPaso) =>
   store.contactos.filter((c) => estadoProximoPaso(c) === estado).length;
 

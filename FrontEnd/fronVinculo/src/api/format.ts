@@ -14,6 +14,12 @@ export function nombreCompleto(c: Contacto, conTratamiento = true): string {
   return [conTratamiento ? c.tratamiento : null, c.nombre, c.apellidos].filter(Boolean).join(' ');
 }
 
+/** Número con separador de miles español: 12004 → "12.004" */
+export const numero = (n: number) => n.toLocaleString('es-ES');
+
+/** "1 contacto", "12.004 contactos" */
+export const plural = (n: number, uno: string, varios: string) => `${numero(n)} ${n === 1 ? uno : varios}`;
+
 export function iniciales(nombre: string): string {
   return nombre
     .split(/\s+/)

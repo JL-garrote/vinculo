@@ -8,8 +8,8 @@
   Un gestor de relaciones personales para cuidar tu red de contactos con intención.
 </p>
 
-> **🚀 Versión 1.3.0: edita tus datos.**
-> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade la edición de contactos, círculos, notas y recordatorios desde la app. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
+> **🚀 Versión 1.4.0: accesible y navegable.**
+> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade un buscador global de contactos, una dirección propia para cada vista y una revisión completa de accesibilidad (teclado, lector de pantalla y contraste). El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
 
 ---
 
@@ -33,6 +33,7 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - Indicadores clave: contactos totales, prioritarios, próximos pasos y cadencia media.
 - Tarjetas con las relaciones que **requieren tu atención**, ordenadas por urgencia.
 - Notas recientes, recordatorios pendientes y reparto de tu red por círculos.
+- Botón **Contactar** en cada tarjeta de atención: abre WhatsApp, la llamada o el email según el canal preferido del contacto.
 
 ### Contactos
 - Directorio con búsqueda y filtros por círculo, estado del próximo paso y ciudad.
@@ -55,13 +56,16 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - Prioridades, siguiente acción con fecha y aviso de acciones vencidas.
 
 ### Experiencia
+- 🔎 **Buscador global** en la barra superior: escribe un nombre, empresa o email y salta directamente a la ficha. Atajo **Ctrl+K** (⌘K en Mac).
+- 🔗 **Cada vista tiene su dirección** (`#/contactos`, `#/contactos/12`, `#/pipeline`): puedes recargar, usar el botón *Atrás* del navegador o abrir una ficha en otra pestaña.
+- ♿ **Accesible**: se puede usar entera con teclado, con foco visible y un enlace para saltar al contenido; los lectores de pantalla anuncian cada control por su nombre; el texto cumple el contraste WCAG AA en modo claro y oscuro.
 - 🌙 **Modo oscuro**, que sigue al sistema por defecto y recuerda tu elección.
 - 📱 **Diseño adaptable** a móvil, tablet y escritorio.
 - 💻 **Instalable como app de escritorio** desde Edge o Chrome (PWA), con su propio icono.
 
 ## 📥 Importar contactos
 
-En **Contactos → Importar (Google / LinkedIn)** puedes traer tu red de golpe a partir de un archivo `.csv`:
+En **Contactos → Importar contactos** puedes traer tu red de golpe a partir de un archivo `.csv`:
 
 | Fuente | Cómo conseguir el archivo |
 |---|---|
@@ -211,6 +215,16 @@ vinculo/
 
 ## 🆕 Novedades
 
+### v1.4.0
+- **Buscador global de contactos** en la barra superior, con navegación por teclado y atajo Ctrl+K / ⌘K.
+- **Direcciones propias para cada vista**: recargar, el botón *Atrás* y los enlaces a una ficha concreta ya funcionan.
+- **Accesibilidad (WCAG 2.2 AA)** en toda la app: nombres para todos los controles, iconos que el lector de pantalla ya no lee como texto, foco visible, menú móvil que se maneja con teclado y contraste corregido en ambos temas.
+- **Contactos** más claro: resumen de la red en una línea, atajos a los pasos vencidos y de esta semana, botón para quitar filtros cuando no hay resultados y columnas que aparecen solo cuando caben, sin scroll lateral.
+- Los colores de los círculos se ajustan solos para que el texto siempre se lea, también en modo oscuro.
+- En móvil, toda la fila de un contacto abre su ficha.
+- El botón **Contactar** del dashboard abre el canal preferido del contacto, y las tarjetas del pipeline se pueden abrir con el teclado para editarlas o cambiarlas de etapa.
+- Fuera los controles que aún no hacían nada (notificaciones, ajustes, cerrar sesión y sincronizar calendario): volverán cuando tengan funcionalidad.
+
 ### v1.3.0
 - **Edición** de contactos, círculos, notas y recordatorios desde la app, reutilizando los mismos formularios que para crearlos.
 - Al editar un contacto se conservan los datos que el formulario no muestra (familia, foto, origen de la importación…).
@@ -233,14 +247,16 @@ vinculo/
 
 ## 🗺️ Hoja de ruta
 
-Esta es la **versión 1.3.0**. Lo siguiente que está previsto para las próximas versiones:
+Esta es la **versión 1.4.0**. Lo siguiente que está previsto para las próximas versiones:
 
 - [x] Borrar contactos, círculos y notas desde la app *(v1.1.0)*.
 - [x] Importar contactos desde LinkedIn, Google y CSV *(v1.2.0)*.
 - [x] Editar contactos, círculos, notas y recordatorios desde la app *(v1.3.0)*.
 - [ ] Editar interacciones desde la app (el endpoint ya existe).
 - [ ] Borrar interacciones y recordatorios.
-- [ ] Buscador global funcional (contactos, notas y círculos).
+- [x] Buscador global de contactos *(v1.4.0)*.
+- [x] Accesibilidad WCAG AA y direcciones propias para cada vista *(v1.4.0)*.
+- [ ] Ampliar el buscador global a notas y círculos.
 - [ ] Pantalla de ajustes y edición del perfil.
 - [ ] Inicio de sesión para proteger los datos.
 - [ ] Sincronización con el calendario.
@@ -249,13 +265,13 @@ Esta es la **versión 1.3.0**. Lo siguiente que está previsto para las próxima
 
 ¿Tienes alguna idea? Abre un *issue*.
 
-## ⚠️ Limitaciones conocidas de la v1.3.0
+## ⚠️ Limitaciones conocidas de la v1.4.0
 
 - Todavía no se pueden editar interacciones desde la app, ni borrar interacciones o recordatorios.
 - Los endpoints de borrado y edición responden `200` aunque no hayan cambiado nada. Al editar, la app vuelve a leer el registro y muestra lo que de verdad quedó guardado, pero no puede mostrar el motivo del fallo.
 - La seguridad está abierta (sin login): está pensada para usarse **solo en local**. No la expongas a internet.
 - La importación solo admite archivos `.csv` (no `.vcf` ni `.xlsx`) y no trae fotos de perfil.
-- Algunos botones del diseño (sincronizar calendario, ajustes) todavía no tienen funcionalidad.
+- El buscador global solo busca contactos (por nombre, empresa o email), todavía no notas ni círculos.
 
 ## 👤 Autor
 
