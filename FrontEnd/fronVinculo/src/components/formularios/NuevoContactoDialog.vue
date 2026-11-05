@@ -197,7 +197,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         class="self-start flex items-center gap-1 font-label-md text-label-md text-primary hover:underline"
         @click="masDatos = !masDatos"
       >
-        <span class="material-symbols-outlined text-base">{{ masDatos ? 'expand_less' : 'expand_more' }}</span>
+        <span aria-hidden="true" class="material-symbols-outlined text-base">{{ masDatos ? 'expand_less' : 'expand_more' }}</span>
         {{ masDatos ? 'Menos datos' : 'Más datos (ubicación, intereses, cumpleaños…)' }}
       </button>
 
@@ -251,7 +251,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         </button>
         <button
           type="submit"
-          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
+          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!form.nombre.trim() || guardando"
         >
           {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Crear contacto' }}

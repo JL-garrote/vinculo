@@ -87,7 +87,7 @@ const campo =
         </button>
         <button
           type="submit"
-          class="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+          class="px-3 py-1.5 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md disabled:opacity-50"
           :disabled="!contenido.trim() || guardando"
         >
           {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Guardar nota' }}

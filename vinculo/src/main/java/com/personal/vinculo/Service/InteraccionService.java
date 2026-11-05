@@ -36,7 +36,7 @@ public class InteraccionService {
             String sql = "UPDATE interacciones SET contacto_id = ?, contacto_relacionado_id = ?, tipo = ?, titulo = ?, "
                     + "fecha = ?, lugar = ?, resumen = ?, temas = ?, es_borrador = ? WHERE id = ?";
             jdbc.update(sql,interaccion.getContactoID(),InsertHelper.idONull(interaccion.getContactoRelacionadoID()),interaccion.getTipo(),interaccion.getTitulo(),interaccion.getFecha(),interaccion.getLugar(),interaccion.getResumen(),interaccion.getTemas(),interaccion.getBorrador(),id);
-            System.out.println("[circulo actualizado correctamente]");
+            System.out.println("[interaccion actualizado correctamente]");
         } catch (Exception e) {
             System.out.println("[Error al actualizar]" + e.getMessage());
         }

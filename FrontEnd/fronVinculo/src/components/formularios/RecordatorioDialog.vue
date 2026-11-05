@@ -111,7 +111,7 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         </button>
         <button
           type="submit"
-          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
+          class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary dark:hover:bg-primary-fixed-dim text-on-primary font-label-md text-label-md shadow-sm disabled:opacity-50"
           :disabled="!titulo.trim() || !venceEn || guardando"
         >
           {{ guardando ? 'Guardando…' : original ? 'Guardar cambios' : 'Programar' }}
