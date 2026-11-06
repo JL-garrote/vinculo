@@ -67,11 +67,21 @@ function existeTras<T>(registro: T | null): T {
   return registro;
 }
 
+/** Ruta inexistente en el backend: 405, o 404 sin mensaje propio (el 404 de "no encontrado" sí lo trae) */
+function faltaRuta(e: unknown): boolean {
+  return e instanceof ApiError && (e.status === 405 || (e.status === 404 && e.message.startsWith('El backend respondió')));
+}
+
 /** Como mensajeError, pero explica el caso de que el backend aún no tenga la ruta PUT de edición */
 export function mensajeEdicion(e: unknown): string {
-  // Ruta inexistente: 405, o 404 sin mensaje propio del backend (el 404 de "no encontrado" sí lo trae)
-  if (e instanceof ApiError && (e.status === 405 || (e.status === 404 && e.message.startsWith('El backend respondió')))) {
-    return 'El backend todavía no permite guardar cambios. No se ha modificado nada.';
+  if (faltaRuta(e)) return 'El backend todavía no permite guardar cambios. No se ha modificado nada.';
+  return mensajeError(e);
+}
+
+/** Como mensajeError, pero explica el caso de que el backend aún no tenga la ruta de borrado */
+export function mensajeBorrado(e: unknown): string {
+  if (faltaRuta(e)) {
+    return 'El backend todavía no permite borrar esto. Si acabas de actualizarlo, reinícialo. No se ha borrado nada.';
   }
   return mensajeError(e);
 }
@@ -112,11 +122,19 @@ export const api = {
   interaccionesDe: async (contactoId: number) =>
     (await get<Interaccion[] | null>(`/interaccion/contacto/${contactoId}`)) ?? [],
   crearInteraccion: (datos: PeticionInteraccion) => send<Interaccion>('POST', '/interaccion', datos),
+  borrarInteraccion: (id: number) => get<null>(`/interaccion/borrar/${id}`),
+  // No hay GET de una interacción suelta: se vuelve a pedir el historial del contacto y se busca en él
+  actualizarInteraccion: async (i: Interaccion) => {
+    await send<null>('PUT', `/interaccion/actualizar/${i.id}`, i);
+    const historial = (await get<Interaccion[] | null>(`/interaccion/contacto/${i.contactoID}`)) ?? [];
+    return existeTras(historial.find((x) => x.id === i.id) ?? null);
+  },
 
   recordatoriosPendientes: async () => (await get<Recordatorio[] | null>('/recordatorio/pendientes')) ?? [],
   recordatoriosDe: async (contactoId: number) =>
     (await get<Recordatorio[] | null>(`/recordatorio/contacto/${contactoId}`)) ?? [],
   crearRecordatorio: (datos: PeticionRecordatorio) => send<Recordatorio>('POST', '/recordatorio', datos),
+  borrarRecordatorio: (id: number) => get<null>(`/recordatorio/borrar/${id}`),
   // No hay GET de un recordatorio suelto: se devuelve tal como se ha enviado
   actualizarRecordatorio: async (r: Recordatorio) => {
     await send<null>('PUT', `/recordatorio/actualizar/${r.id}`, r);

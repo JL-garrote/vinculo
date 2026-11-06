@@ -8,8 +8,8 @@
   Un gestor de relaciones personales para cuidar tu red de contactos con intención.
 </p>
 
-> **🚀 Versión 1.4.0: accesible y navegable.**
-> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión añade un buscador global de contactos, una dirección propia para cada vista y una revisión completa de accesibilidad (teclado, lector de pantalla y contraste). El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
+> **🚀 Versión 1.5.0: tu historial, completo.**
+> Vínculo funciona de punta a punta: backend, frontend, base de datos y despliegue con Docker. Esta versión completa la gestión del historial: ya se pueden editar y borrar interacciones y borrar recordatorios desde la ficha del contacto. Todos los diálogos de la app son ahora accesibles con teclado y lector de pantalla. El proyecto sigue en desarrollo activo y **vendrán más actualizaciones con nuevas funcionalidades**. Consulta las [novedades](#-novedades) y la [hoja de ruta](#-hoja-de-ruta).
 
 ---
 
@@ -47,8 +47,8 @@ Es una aplicación **monousuario**: está pensada para que la uses tú, con tus 
 - Registro de **interacciones** (café, llamada, reunión, email…), con borradores.
 - **Notas** (generales, oportunidades, preferencias y recursos) y **recordatorios** con recurrencia.
 - Historial completo de la relación.
-- **Edición** del contacto, de sus notas y de sus recordatorios pendientes.
-- Borrado de notas y del propio contacto (con todo su historial). Siempre se pide confirmación antes de borrar.
+- **Edición** del contacto, de sus notas, de sus recordatorios pendientes y de cada **interacción** del historial (tipo, fecha, lugar, resumen, temas y si es borrador).
+- **Borrado** de notas, interacciones, recordatorios y del propio contacto (con todo su historial). Siempre se pide confirmación antes de borrar.
 
 ### Pipeline relacional
 - Tablero kanban con cinco etapas: *Identificado → Primer contacto → Reunión → Seguimiento → Aliado*.
@@ -175,10 +175,12 @@ Todas las rutas empiezan por `/api/controller`.
 | | `GET` | `/interaccion/contacto/{id}` | Historial de un contacto |
 | | `POST` | `/interaccion` | Registrar interacción |
 | | `PUT` | `/interaccion/actualizar/{id}` | Editar interacción |
+| | `GET` | `/interaccion/borrar/{id}` | Borrar interacción |
 | Recordatorios | `GET` | `/recordatorio/pendientes` | Recordatorios pendientes |
 | | `GET` | `/recordatorio/contacto/{id}` | Recordatorios de un contacto |
 | | `POST` | `/recordatorio` | Crear recordatorio |
 | | `PUT` | `/recordatorio/actualizar/{id}` | Editar recordatorio |
+| | `GET` | `/recordatorio/borrar/{id}` | Borrar recordatorio |
 | Pipeline | `GET` | `/pipeline/todos` | Lista de pipelines |
 | | `GET` | `/pipeline/porID/{id}` | Un pipeline |
 | | `GET` | `/pipeline/{id}/contactos` | Contactos de un pipeline |
@@ -215,6 +217,14 @@ vinculo/
 
 ## 🆕 Novedades
 
+### v1.5.0
+- **Editar interacciones** desde el historial de la ficha: tipo, fecha, título, lugar, resumen, temas y si es un borrador. Si cambias la fecha, el historial se reordena solo.
+- **Borrar interacciones y recordatorios**, con confirmación. Al borrar un recordatorio desaparece también de los pendientes del dashboard.
+- Nuevos endpoints de borrado en la API: `GET /interaccion/borrar/{id}` y `GET /recordatorio/borrar/{id}`.
+- **Diálogos accesibles** en toda la app: el lector de pantalla los anuncia con su título, el foco entra al abrirlos y no se escapa con Tab, *Esc* los cierra y al cerrar el foco vuelve al botón que los abrió.
+- Los botones de editar y borrar dicen a qué elemento afectan (por ejemplo, «Borrar la interacción Café del 1 nov 2026, 10:00»).
+- Si el backend todavía no tiene una ruta de borrado, la app lo explica en lugar de mostrar un error genérico.
+
 ### v1.4.0
 - **Buscador global de contactos** en la barra superior, con navegación por teclado y atajo Ctrl+K / ⌘K.
 - **Direcciones propias para cada vista**: recargar, el botón *Atrás* y los enlaces a una ficha concreta ya funcionan.
@@ -247,15 +257,14 @@ vinculo/
 
 ## 🗺️ Hoja de ruta
 
-Esta es la **versión 1.4.0**. Lo siguiente que está previsto para las próximas versiones:
+Esta es la **versión 1.5.0**. Lo siguiente que está previsto para las próximas versiones:
 
 - [x] Borrar contactos, círculos y notas desde la app *(v1.1.0)*.
 - [x] Importar contactos desde LinkedIn, Google y CSV *(v1.2.0)*.
 - [x] Editar contactos, círculos, notas y recordatorios desde la app *(v1.3.0)*.
-- [ ] Editar interacciones desde la app (el endpoint ya existe).
-- [ ] Borrar interacciones y recordatorios.
 - [x] Buscador global de contactos *(v1.4.0)*.
 - [x] Accesibilidad WCAG AA y direcciones propias para cada vista *(v1.4.0)*.
+- [x] Editar interacciones y borrar interacciones y recordatorios *(v1.5.0)*.
 - [ ] Ampliar el buscador global a notas y círculos.
 - [ ] Pantalla de ajustes y edición del perfil.
 - [ ] Inicio de sesión para proteger los datos.
@@ -265,9 +274,8 @@ Esta es la **versión 1.4.0**. Lo siguiente que está previsto para las próxima
 
 ¿Tienes alguna idea? Abre un *issue*.
 
-## ⚠️ Limitaciones conocidas de la v1.4.0
+## ⚠️ Limitaciones conocidas de la v1.5.0
 
-- Todavía no se pueden editar interacciones desde la app, ni borrar interacciones o recordatorios.
 - Los endpoints de borrado y edición responden `200` aunque no hayan cambiado nada. Al editar, la app vuelve a leer el registro y muestra lo que de verdad quedó guardado, pero no puede mostrar el motivo del fallo.
 - La seguridad está abierta (sin login): está pensada para usarse **solo en local**. No la expongas a internet.
 - La importación solo admite archivos `.csv` (no `.vcf` ni `.xlsx`) y no trae fotos de perfil.

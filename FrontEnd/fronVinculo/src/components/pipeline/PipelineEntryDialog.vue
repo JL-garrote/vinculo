@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ModalBase from '../ModalBase.vue';
 import { computed, ref } from 'vue';
 import type {
   Contacto,
@@ -55,20 +56,8 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim" @click.self="emit('cerrar')">
-    <form
-      class="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl p-6 flex flex-col gap-5"
-      @submit.prevent="guardar"
-      @keydown.esc="emit('cerrar')"
-    >
-      <div class="flex items-center justify-between">
-        <h2 class="font-headline-sm text-headline-sm text-on-surface">
-          {{ editando ? 'Editar en el pipeline' : 'Añadir al pipeline' }}
-        </h2>
-        <button type="button" class="p-1 text-on-surface-variant hover:text-on-surface" title="Cerrar" @click="emit('cerrar')">
-          <span aria-hidden="true" class="material-symbols-outlined">close</span>
-        </button>
-      </div>
+  <ModalBase :titulo="editando ? 'Editar en el pipeline' : 'Añadir al pipeline'" @cerrar="emit('cerrar')">
+    <form class="flex flex-col gap-5" @submit.prevent="guardar">
 
       <!-- Contacto -->
       <div class="flex flex-col gap-1.5">
@@ -178,5 +167,5 @@ const etiqueta = 'font-label-sm text-label-sm uppercase tracking-wider text-on-s
         </div>
       </div>
     </form>
-  </div>
+  </ModalBase>
 </template>

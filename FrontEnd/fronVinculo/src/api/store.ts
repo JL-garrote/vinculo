@@ -65,6 +65,12 @@ export async function borrarNota(id: number) {
   store.notas = store.notas.filter((n) => n.id !== id);
 }
 
+/** Borra un recordatorio y lo quita de los pendientes del dashboard */
+export async function borrarRecordatorio(id: number) {
+  await api.borrarRecordatorio(id);
+  store.recordatorios = store.recordatorios.filter((r) => r.id !== id);
+}
+
 /** Sustituye en la lista el registro con el mismo id (tras editarlo); si no está, no hace nada */
 export function reemplazar<T extends { id: number }>(lista: T[], nuevo: T) {
   const i = lista.findIndex((x) => x.id === nuevo.id);

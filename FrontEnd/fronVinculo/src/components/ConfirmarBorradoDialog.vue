@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ModalBase from './ModalBase.vue';
-import { mensajeError } from '@/api/vinculo';
+import { mensajeBorrado } from '@/api/vinculo';
 
 const props = defineProps<{
   titulo: string;
@@ -22,7 +22,7 @@ async function confirmar() {
     await props.borrar();
     emit('borrado');
   } catch (e) {
-    error.value = mensajeError(e);
+    error.value = mensajeBorrado(e);
   } finally {
     borrando.value = false;
   }

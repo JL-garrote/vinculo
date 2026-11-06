@@ -8,10 +8,12 @@ import AvatarContacto from '@/components/AvatarContacto.vue';
 import NuevaNotaForm from '@/components/formularios/NuevaNotaForm.vue';
 import NuevoContactoDialog from '@/components/formularios/NuevoContactoDialog.vue';
 import RecordatorioDialog from '@/components/formularios/RecordatorioDialog.vue';
+import InteraccionDialog from '@/components/formularios/InteraccionDialog.vue';
 import ConfirmarBorradoDialog from '@/components/ConfirmarBorradoDialog.vue';
 import {
   borrarContacto,
   borrarNota,
+  borrarRecordatorio,
   circuloDe,
   contactoPorId,
   notasDe,
@@ -30,6 +32,7 @@ import {
   lista,
   nombreCompleto,
   parseFecha,
+  plural,
   proximoCumple,
   textoDias,
   tiposInteraccion,
@@ -203,10 +206,41 @@ function recordatorioGuardado(r: Recordatorio) {
       : recordatorios.value.filter((x) => x.id !== r.id);
 }
 
+const interaccionEditando = ref<Interaccion | null>(null);
+
+function interaccionGuardada(i: Interaccion) {
+  interaccionEditando.value = null;
+  // Si cambió la fecha, el historial se reordena (más reciente primero)
+  interacciones.value = interacciones.value
+    .map((x) => (x.id === i.id ? i : x))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+}
+
 // ---------- Borrados ----------
 
 const borrandoContacto = ref(false);
 const notaABorrar = ref<Nota | null>(null);
+const interaccionABorrar = ref<Interaccion | null>(null);
+const recordatorioABorrar = ref<Recordatorio | null>(null);
+
+const borrarInteraccion = (id: number) => api.borrarInteraccion(id);
+
+function interaccionBorrada(id: number) {
+  interaccionABorrar.value = null;
+  interacciones.value = interacciones.value.filter((x) => x.id !== id);
+}
+
+function recordatorioBorrado(id: number) {
+  recordatorioABorrar.value = null;
+  recordatorios.value = recordatorios.value.filter((x) => x.id !== id);
+}
+
+/** Texto corto para identificar una interacción en la confirmación de borrado */
+function describirInteraccion(i: Interaccion) {
+  const fecha = parseFecha(i.fecha);
+  const titulo = i.titulo ?? (tiposInteraccion[i.tipo] ?? tiposInteraccion.otro).label;
+  return fecha ? `${titulo} del ${formatoFecha(fecha, true)}` : titulo;
+}
 
 function contactoBorrado() {
   borrandoContacto.value = false;
@@ -501,6 +535,7 @@ function contactoBorrado() {
                     type="button"
                     class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
                     title="Editar nota"
+                    :aria-label="`Editar la nota «${nota.titulo ?? nota.contenido.slice(0, 40)}»`"
                     @click="notaEditando = nota"
                   >
                     <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
@@ -509,6 +544,7 @@ function contactoBorrado() {
                     type="button"
                     class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
                     title="Borrar nota"
+                    :aria-label="`Borrar la nota «${nota.titulo ?? nota.contenido.slice(0, 40)}»`"
                     @click="notaABorrar = nota"
                   >
                     <span aria-hidden="true" class="material-symbols-outlined text-base">delete</span>
@@ -530,7 +566,7 @@ function contactoBorrado() {
               <span aria-hidden="true" class="p-1.5 rounded-lg bg-primary-fixed text-on-primary-fixed-variant material-symbols-outlined text-lg">alarm</span>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Recordatorios</h2>
               <span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
-                {{ recordatoriosPendientes.length }} pendientes
+                {{ plural(recordatoriosPendientes.length, 'pendiente', 'pendientes') }}
               </span>
             </div>
             <button type="button" class="font-label-sm text-label-sm text-primary hover:underline" @click="programando = true">
@@ -566,15 +602,27 @@ function contactoBorrado() {
                 <template v-if="r.estado !== 'pendiente'"> · {{ r.estado }}</template>
               </span>
             </div>
-            <button
-              v-if="r.estado === 'pendiente'"
-              type="button"
-              class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
-              title="Editar recordatorio"
-              @click="recordatorioEditando = r"
-            >
-              <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
-            </button>
+            <div class="flex items-center gap-1 shrink-0">
+              <button
+                v-if="r.estado === 'pendiente'"
+                type="button"
+                class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+                title="Editar recordatorio"
+                :aria-label="`Editar el recordatorio «${r.titulo}»`"
+                @click="recordatorioEditando = r"
+              >
+                <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
+              </button>
+              <button
+                type="button"
+                class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                title="Borrar recordatorio"
+                :aria-label="`Borrar el recordatorio «${r.titulo}»`"
+                @click="recordatorioABorrar = r"
+              >
+                <span aria-hidden="true" class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -649,7 +697,7 @@ function contactoBorrado() {
             <div>
               <h2 class="font-headline-sm text-headline-sm text-on-surface">Memoria Relacional &amp; Historial</h2>
               <span class="font-label-sm text-label-sm text-on-surface-variant">
-                {{ timeline.length }} interacciones registradas
+                {{ plural(timeline.length, 'interacción registrada', 'interacciones registradas') }}
               </span>
             </div>
           </div>
@@ -686,7 +734,27 @@ function contactoBorrado() {
                     Borrador
                   </span>
                 </div>
-                <span class="font-label-sm text-label-sm text-on-surface-variant">{{ entry.fechaTexto }}</span>
+                <div class="flex items-center gap-1 sm:gap-2">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant mr-auto sm:mr-0">{{ entry.fechaTexto }}</span>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"
+                    title="Editar interacción"
+                    :aria-label="`Editar la interacción ${describirInteraccion(entry)}`"
+                    @click="interaccionEditando = interacciones.find((x) => x.id === entry.id) ?? null"
+                  >
+                    <span aria-hidden="true" class="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                    title="Borrar interacción"
+                    :aria-label="`Borrar la interacción ${describirInteraccion(entry)}`"
+                    @click="interaccionABorrar = interacciones.find((x) => x.id === entry.id) ?? null"
+                  >
+                    <span aria-hidden="true" class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
               </div>
               <div class="bg-surface-container-low rounded-lg flex flex-col gap-2 p-4">
                 <p v-if="entry.lugar" class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
@@ -721,6 +789,12 @@ function contactoBorrado() {
       @guardado="recordatorioGuardado"
       @cerrar="recordatorioEditando = null"
     />
+    <InteraccionDialog
+      v-if="interaccionEditando"
+      :interaccion="interaccionEditando"
+      @guardado="interaccionGuardada"
+      @cerrar="interaccionEditando = null"
+    />
     <NuevoContactoDialog
       v-if="editandoContacto"
       :contacto="contacto"
@@ -743,6 +817,22 @@ function contactoBorrado() {
       :borrar="() => borrarNota(notaABorrar!.id)"
       @borrado="notaABorrar = null"
       @cerrar="notaABorrar = null"
+    />
+    <ConfirmarBorradoDialog
+      v-if="interaccionABorrar"
+      titulo="Borrar interacción"
+      :mensaje="`Se borrará del historial la interacción ${describirInteraccion(interaccionABorrar)}.`"
+      :borrar="() => borrarInteraccion(interaccionABorrar!.id)"
+      @borrado="interaccionBorrada(interaccionABorrar!.id)"
+      @cerrar="interaccionABorrar = null"
+    />
+    <ConfirmarBorradoDialog
+      v-if="recordatorioABorrar"
+      titulo="Borrar recordatorio"
+      :mensaje="`Se borrará el recordatorio «${recordatorioABorrar.titulo}».`"
+      :borrar="() => borrarRecordatorio(recordatorioABorrar!.id)"
+      @borrado="recordatorioBorrado(recordatorioABorrar!.id)"
+      @cerrar="recordatorioABorrar = null"
     />
   </div>
 </template>
